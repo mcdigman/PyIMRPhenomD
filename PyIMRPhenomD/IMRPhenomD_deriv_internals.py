@@ -9,8 +9,6 @@ from numba import njit, prange
 import PyIMRPhenomD.IMRPhenomD_const as imrc
 from PyIMRPhenomD.IMRPhenomD_internals import ComputeDeltasFromCollocation, ComputeIMRPhenDPhaseConnectionCoefficients, DPhiInsAnsatzInt, DPhiIntAnsatz, DPhiMRD, FinalSpin0815, PhiInsAnsatzInt, PhiIntAnsatz, PhiMRDAnsatzInt, PNPhasingSeriesTaylorF2, alphaFits, amp0Func, betaFits, chiPN, fmaxCalc, fringdown, gamma_funs, rho_funs, sigmaFits
 
-# from IMRPhenomD_internals import AmpIn
-
 
 @njit()
 def PhiInsPrefactorsMt(eta, Mt_sec, chis, chia, chi):
@@ -37,7 +35,6 @@ def PhiInsPrefactorsMt(eta, Mt_sec, chis, chia, chi):
     two = 1 / 2 * sigmas[3] / eta * Mt_sec**(6 / 3)
     prefactors_ini = (minus_five_thirds, minus_one, minus_two_thirds, minus_third,
                         initial_phasing, third, two_thirds, one, four_thirds, five_thirds, two)
-                        # initial_phasing,third,two_thirds,0.,0.,0.,0.)
     prefactors_log = (zero_with_logv, third_with_logv)
     return prefactors_ini, prefactors_log
 

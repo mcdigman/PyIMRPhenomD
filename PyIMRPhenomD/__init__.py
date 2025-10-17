@@ -1,0 +1,2 @@
+from PyIMRPhenomD.IMRPhenomD import IMRPhenomDGenerateh22FDAmpPhase as IMRPhenomDGenerateh22FDAmpPhase
+from PyIMRPhenomD.IMRPhenomD_internals import AmpPhaseFDWaveform as AmpPhaseFDWaveform

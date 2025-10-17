@@ -1,10 +1,11 @@
 """demo of the IMRPhenomD Python module C 2021 Matthew Digman"""
 from time import perf_counter
 
-import IMRPhenomD_const as imrc
 import numpy as np
 
-from IMRPhenomD import AmpPhaseFDWaveform, IMRPhenomDGenerateh22FDAmpPhase
+import PyIMRPhenomD.IMRPhenomD_const as imrc
+from PyIMRPhenomD.IMRPhenomD import IMRPhenomDGenerateh22FDAmpPhase
+from PyIMRPhenomD.IMRPhenomD_internals import AmpPhaseFDWaveform
 
 if __name__ == '__main__':
 

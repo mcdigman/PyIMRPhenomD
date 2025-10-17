@@ -1,23 +1,21 @@
 """Python implementation of IMRPhenomD by Matthew Digman (C) 2021"""
 
+# Copyright (C) 2015 Michael Puerrer, Sebastian Khan, Frank Ohme, Ofek Birnholtz, Lionel London
 #
- # Copyright (C) 2015 Michael Puerrer, Sebastian Khan, Frank Ohme, Ofek Birnholtz, Lionel London
- #
- #  This program is free software; you can redistribute it and/or modify
- #  it under the terms of the GNU General Public License as published by
- #  the Free Software Foundation; either version 2 of the License, or
- #  (at your option) any later version.
- #
- #  This program is distributed in the hope that it will be useful,
- #  but WITHOUT ANY WARRANTY; without even the implied warranty of
- #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- #  GNU General Public License for more details.
- #
- #  You should have received a copy of the GNU General Public License
- #  along with with program; see the file COPYING. If not, write to the
- #  Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- #  MA  02111-1307  USA
- # /
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with with program; see the file COPYING. If not, write to the
+#  Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+#  MA  02111-1307  USA
 
 # LAL independent code (C) 2017 Michael Puerrer
 import numpy as np
@@ -91,36 +89,24 @@ def IMRPhenomDGenerateFD_internal(phi0, fRef_in, deltaF, m1_in, m2_in, chi1_in, 
         htilde.data[i] = amp * np.exp(-1j * phi)
     return htilde
 
-# *
- # @addtogroup LALSimIMRPhenom_c
- # @{
- #
- # @name Routines for IMR Phenomenological Model "D"
- # @{
- #
- # @author Michael Puerrer, Sebastian Khan, Frank Ohme
- #
- # @brief C code for IMRPhenomD phenomenological waveform model.
- #
- # This is an aligned-spin frequency domain model.
- # See Husa et al \cite Husa:2015iqa, and Khan et al \cite Khan:2015jqa
- # for details. Any studies that use this waveform model should include
- # a reference to both of these papers.
- #
- # @note The model was calibrated to mass-ratios [1:1,1:4,1:8,1:18].
- # * Along the mass-ratio 1:1 line it was calibrated to spins  [-0.95, +0.98].
- # * Along the mass-ratio 1:4 line it was calibrated to spins  [-0.75, +0.75].
- # * Along the mass-ratio 1:8 line it was calibrated to spins  [-0.85, +0.85].
- # * Along the mass-ratio 1:18 line it was calibrated to spins [-0.8, +0.4].
- # The calibration points will be given in forthcoming papers.
- #
- # @attention The model is usable outside this parameter range,
- # and in tests to date gives sensible physical results,
- # but conclusive statements on the physical fidelity of
- # the model for these parameters await comparisons against further
- # numerical-relativity simulations. For more information, see the review wiki
- # under https:#www.lsc-group.phys.uwm.edu/ligovirgo/cbcnote/WaveformsReview/IMRPhenomDCodeReview
- # /
+# This is an aligned-spin frequency domain model.
+# See Husa et al \cite Husa:2015iqa, and Khan et al \cite Khan:2015jqa
+# for details. Any studies that use this waveform model should include
+# a reference to both of these papers.
+#
+# @note The model was calibrated to mass-ratios [1:1,1:4,1:8,1:18].
+# * Along the mass-ratio 1:1 line it was calibrated to spins  [-0.95, +0.98].
+# * Along the mass-ratio 1:4 line it was calibrated to spins  [-0.75, +0.75].
+# * Along the mass-ratio 1:8 line it was calibrated to spins  [-0.85, +0.85].
+# * Along the mass-ratio 1:18 line it was calibrated to spins [-0.8, +0.4].
+# The calibration points will be given in forthcoming papers.
+#
+# @attention The model is usable outside this parameter range,
+# and in tests to date gives sensible physical results,
+# but conclusive statements on the physical fidelity of
+# the model for these parameters await comparisons against further
+# numerical-relativity simulations. For more information, see the review wiki
+# under https:#www.lsc-group.phys.uwm.edu/ligovirgo/cbcnote/WaveformsReview/IMRPhenomDCodeReview
 
 
 def IMRPhenomDGenerateFD(phi0, fRef_in, deltaF, m1_SI, m2_SI, chi1, chi2, f_min, f_max, distance):

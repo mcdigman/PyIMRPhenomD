@@ -30,7 +30,7 @@ from PyIMRPhenomD.IMRPhenomD_fring_helper import EradRational0815, fdamp_interp,
 
 # Miscellaneous functions ###############
 
-# /
+
 class COMPLEX16FrequencySeries:
     """SM: structure for downsampled FD 22-mode Amp/Phase waveforms"""
     def __init__(self, epoch, f0, deltaF, length):
@@ -690,7 +690,6 @@ def PhiInsPrefactors(eta, chis, chia, chi):
     two = 1 / 2 * sigmas[3] / eta
     prefactors_ini = (minus_five_thirds, minus_one, minus_two_thirds, minus_third,
                         initial_phasing, third, two_thirds, one, four_thirds, five_thirds, two)
-                        # initial_phasing,third,two_thirds,0.,0.,0.,0.)
     prefactors_log = (zero_with_logv, third_with_logv)
     return prefactors_ini, prefactors_log
 
