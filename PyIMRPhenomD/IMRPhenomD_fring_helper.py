@@ -21,13 +21,18 @@
 # LAL independent code (C) 2017 Michael Puerrer
 #
 # /**
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, overload
 
 import numpy as np
 from numba import njit
-from numpy.typing import NDArray
 
 # from interpolation.splines import filter_cubic, eval_cubic
-from pyakima.pyakima import akima_create_helper, cubic_call_scalar
+from pyakima.pyakima import akima_create_helper, cubic_call
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 # deleted second and second to last values so grid is uniform spaced
 NQ: int = 1001
@@ -380,19 +385,25 @@ coeffs_fring = akima_create_helper(QNMData_a, QNMData_fring, corner_model=2)
 coeffs_fdamp = akima_create_helper(QNMData_a, QNMData_fdamp, corner_model=2)
 
 
+@overload
+def fring_interp(finspin: float) -> float: ...
+@overload
+def fring_interp(finspin: NDArray[np.floating]) -> NDArray[np.floating]: ...
 @njit()
-def fring_interp(finspin: float) -> float:
+def fring_interp(finspin: float | NDArray[np.floating]) -> float | NDArray[np.floating]:
     """Cubic spline interpolation for fring with scalar finspin"""
-    # TODO can only handle scalar input right now
-    return cubic_call_scalar(finspin, coeffs_fring, ext=4)
+    return cubic_call(finspin, coeffs_fring, ext=4)
     # return eval_cubic(gridS,coeffs_fring,finspin.reshape((finspin.size,1)))
 
 
+@overload
+def fdamp_interp(finspin: float) -> float: ...
+@overload
+def fdamp_interp(finspin: NDArray[np.floating]) -> NDArray[np.floating]: ...
 @njit()
-def fdamp_interp(finspin: float) -> float:
+def fdamp_interp(finspin: float | NDArray[np.floating]) -> float | NDArray[np.floating]:
     """Cubic spline interpolation for fdamp with scalar finspin"""
-    # TODO can only handle scalar input right now
-    return cubic_call_scalar(finspin, coeffs_fdamp, ext=4)
+    return cubic_call(finspin, coeffs_fdamp, ext=4)
 
 
 @njit()
