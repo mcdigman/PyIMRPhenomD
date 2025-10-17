@@ -24,26 +24,26 @@ Currently the only non-standard dependencies are numba itself, and the pip-insta
 which provides numba-compatible functions for cubic spline interpolation.
 
 =======Structure and Usage========
-The structure of the code is for the most part closely related to the C code, and in particular the module provides nearly identical function interfaces 
+The structure of the code is for the most part closely related to the C code, and in particular the module provides nearly identical function interfaces
 for the standard interfaces in IMRPhenomD.py. The demo_IMRPhenomD.py provides a simple demo of the speed and results
 
 ============Accuracy==============
-The module implements the analytic first and second derivatives necessary to compute t(f) and t'(f), rather than computing them numerically 
-as is done in the C code. Using the analytic derivatives increases the code complexity somewhat, but is both walltime faster and produces more numerically accurate results. 
-The improvement in numerical accuracy is particularly significant for t'(f). 
+The module implements the analytic first and second derivatives necessary to compute t(f) and t'(f), rather than computing them numerically
+as is done in the C code. Using the analytic derivatives increases the code complexity somewhat, but is both walltime faster and produces more numerically accurate results.
+The improvement in numerical accuracy is particularly significant for t'(f).
 
 ============Speed==================
 Partly because of the improvements in the derivatives, and partly because of other optimizations,
 in testing PyIMRPhenomD is in most cases considerably faster than the C implementation.
 For example, for the test_case in demo_IMRPhenomD.py,
-PyIMRPhenomD version runs in approximately 0.22ms on one core of an an AMD Ryzen Threadripper 3970X, 
-whereas the C implementation runs in 1.8ms. 
-Therefore, for this test case the python version is almost 9 times faster. 
+PyIMRPhenomD version runs in approximately 0.22ms on one core of an an AMD Ryzen Threadripper 3970X,
+whereas the C implementation runs in 1.8ms.
+Therefore, for this test case the python version is almost 9 times faster.
 The speed advantage of the python version is typically larger the less points are evaluated
 suggesting that the C version is being slowed by overheads not present in the python version.
 However, the python version is typically still ~5 times faster even for much larger grids.
 
-Here are some speed results for different NF with a fixed frequency range for the source in demo_IMRPhenomD.py 
+Here are some speed results for different NF with a fixed frequency range for the source in demo_IMRPhenomD.py
 on a single core of an AMD Ryzen Threadripper 3970X:
 
 NF       PyIMRPhenomD    C IMRPhenomD  Python Speedup
@@ -59,10 +59,10 @@ NF       PyIMRPhenomD    C IMRPhenomD  Python Speedup
 The Python version is always much faster than the C version.
 Though both versions become overhead limited at very small NF, the C version overhead is an order of magnitude worse.
 The exception to the speedup is in compile time. The numba just-in-time compiler takes approximately 15s
-to compile the code, which much occur at run time. However, this is a one time startup overhead, 
+to compile the code, which much occur at run time. However, this is a one time startup overhead,
 and for typical MCMC search applications the overhead will typically quickly become insignificant
 
 
 ===========Feedback================
-For comments, questions, or feedback, please feel free to either contact me through github 
+For comments, questions, or feedback, please feel free to either contact me through github
 or contact me direclty at matthew.digman [at] msu.montana.edu
