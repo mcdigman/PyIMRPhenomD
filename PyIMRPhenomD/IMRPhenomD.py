@@ -20,11 +20,11 @@
 
 # LAL independent code (C) 2017 Michael Puerrer
 import numpy as np
-from IMRPhenomD_internals import FinalSpin0815,DPhiMRD
-from IMRPhenomD_internals import IMRPhenDPhase,IMRPhenDAmplitude,NextPow2,fmaxCalc
-from IMRPhenomD_internals import AmpPhaseFDWaveform,COMPLEX16FrequencySeries
-from IMRPhenomD_deriv_internals import IMRPhenDAmpPhaseFI
-import IMRPhenomD_const as imrc
+from PyIMRPhenomD.IMRPhenomD_internals import FinalSpin0815,DPhiMRD
+from PyIMRPhenomD.IMRPhenomD_internals import IMRPhenDPhase,IMRPhenDAmplitude,NextPow2,fmaxCalc
+from PyIMRPhenomD.IMRPhenomD_internals import AmpPhaseFDWaveform,COMPLEX16FrequencySeries
+from PyIMRPhenomD.IMRPhenomD_deriv_internals import IMRPhenDAmpPhaseFI
+import PyIMRPhenomD.IMRPhenomD_const as imrc
 
 #*
  # @addtogroup LALSimIMRPhenom_c

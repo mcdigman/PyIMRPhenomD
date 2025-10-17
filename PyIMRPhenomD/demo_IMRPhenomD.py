@@ -10,7 +10,7 @@ if __name__=='__main__':
 
     t_start = perf_counter()
     #set the number of frequency pixels
-    NF = 10024
+    NF = 10000024
 
     #set some parameters for a test run of a LISA supermassive black hole source
     distance = 1.0e9*imrc.PC_SI/imrc.CLIGHT
@@ -49,7 +49,7 @@ if __name__=='__main__':
 
     #run 10000 times with the compiled version to test speed
     t0 = perf_counter()
-    n_run = 10000
+    n_run = 100
     for itrm in range(0,n_run):
         IMRPhenomDGenerateh22FDAmpPhase(h22,freq,phic,MfRef_in,m1_SI,m2_SI,chi1,chi2,distance*imrc.CLIGHT)
     tf = perf_counter()

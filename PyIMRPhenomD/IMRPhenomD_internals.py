@@ -24,8 +24,8 @@
 
 import numpy as np
 from numba import njit
-from IMRPhenomD_fring_helper import fring_interp,fdamp_interp,EradRational0815
-import IMRPhenomD_const as imrc
+from PyIMRPhenomD.IMRPhenomD_fring_helper import fring_interp,fdamp_interp,EradRational0815
+import PyIMRPhenomD.IMRPhenomD_const as imrc
 
 ################ Miscellaneous functions ###############
 

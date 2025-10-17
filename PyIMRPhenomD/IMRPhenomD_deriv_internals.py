@@ -3,12 +3,12 @@ Contains new behavior that includes derivatives, different from the C version"""
 import numpy as np
 #nb.parfors.parfor.sequential_parfor_lowering = True
 from numba import njit,prange
-import IMRPhenomD_const as imrc
-from IMRPhenomD_internals import chiPN,FinalSpin0815,fringdown,fmaxCalc,ComputeIMRPhenDPhaseConnectionCoefficients
-from IMRPhenomD_internals import DPhiInsAnsatzInt,PhiInsAnsatzInt,DPhiIntAnsatz,PhiIntAnsatz,DPhiMRD,PhiMRDAnsatzInt
-from IMRPhenomD_internals import PNPhasingSeriesTaylorF2
-from IMRPhenomD_internals import sigmaFits,betaFits,alphaFits
-from IMRPhenomD_internals import amp0Func,ComputeDeltasFromCollocation,gamma_funs,rho_funs
+import PyIMRPhenomD.IMRPhenomD_const as imrc
+from PyIMRPhenomD.IMRPhenomD_internals import chiPN,FinalSpin0815,fringdown,fmaxCalc,ComputeIMRPhenDPhaseConnectionCoefficients
+from PyIMRPhenomD.IMRPhenomD_internals import DPhiInsAnsatzInt,PhiInsAnsatzInt,DPhiIntAnsatz,PhiIntAnsatz,DPhiMRD,PhiMRDAnsatzInt
+from PyIMRPhenomD.IMRPhenomD_internals import PNPhasingSeriesTaylorF2
+from PyIMRPhenomD.IMRPhenomD_internals import sigmaFits,betaFits,alphaFits
+from PyIMRPhenomD.IMRPhenomD_internals import amp0Func,ComputeDeltasFromCollocation,gamma_funs,rho_funs
 #from IMRPhenomD_internals import AmpIn
 
 @njit()

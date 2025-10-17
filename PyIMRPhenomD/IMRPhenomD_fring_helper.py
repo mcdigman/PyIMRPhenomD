@@ -24,7 +24,8 @@
 
 from numba import njit
 import numpy as np
-from interpolation.splines import filter_cubic,eval_cubic
+#from interpolation.splines import filter_cubic, eval_cubic
+from pyakima.pyakima import akima_create_helper, cubic_call_vector
 
 #deleted second and second to last values so grid is uniform spaced
 NQ = 1001
@@ -367,23 +368,31 @@ QNMData_fdamp = np.array([0.0140098,0.0140106,0.0140114,       0.0140177, 0.0140
 #fring_interp = InterpolatedUnivariateSpline(QNMData_a,QNMData_fring,k=3,ext=2)
 #fdamp_interp = InterpolatedUnivariateSpline(QNMData_a,QNMData_fdamp,k=3,ext=2)
 
-gridS = ((-1.,1.,NQ),)
-coeffs_fring = filter_cubic(gridS,QNMData_fring)
-coeffs_fdamp = filter_cubic(gridS,QNMData_fdamp)
+#gridS = ((-1.,1.,NQ),)
+grid = QNMData_a
+assert grid.shape == QNMData_fring.shape
+assert grid.shape == QNMData_fdamp.shape
+#coeffs_fring = filter_cubic(gridS,QNMData_fring)
+#coeffs_fdamp = filter_cubic(gridS,QNMData_fdamp)
+
+coeffs_fring = akima_create_helper(grid, QNMData_fring, corner_model=2)
+coeffs_fdamp = akima_create_helper(grid, QNMData_fdamp, corner_model=2)
 
 @njit()
 def fring_interp(finspin):
     """cubic spline interpolation for fring with scalar finspin"""
     #TODO can only handle scalar input right now
     finspin = np.asarray(finspin)
-    return eval_cubic(gridS,coeffs_fring,finspin.reshape((finspin.size,1)))
+    return cubic_call_vector(finspin, coeffs_fring, ext=4)
+    #return eval_cubic(gridS,coeffs_fring,finspin.reshape((finspin.size,1)))
 
 @njit()
 def fdamp_interp(finspin):
     """cubic spline interpolation for fdamp with scalar finspin"""
     #TODO can only handle scalar input right now
     finspin = np.asarray(finspin)
-    return eval_cubic(gridS,coeffs_fdamp,finspin.reshape((finspin.size,1)))
+    return cubic_call_vector(finspin, coeffs_fdamp, ext=4)
+    #return eval_cubic(gridS,coeffs_fdamp,finspin.reshape((finspin.size,1)))
 
 def fring(eta,chis,chia,finspin):
     """fring is the real part of the ringdown frequency
