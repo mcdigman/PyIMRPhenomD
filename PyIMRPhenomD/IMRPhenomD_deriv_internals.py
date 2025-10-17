@@ -5,13 +5,14 @@ import numpy as np
 
 # nb.parfors.parfor.sequential_parfor_lowering = True
 from numba import njit, prange
+from numpy.typing import NDArray
 
 import PyIMRPhenomD.IMRPhenomD_const as imrc
 from PyIMRPhenomD.IMRPhenomD_internals import ComputeDeltasFromCollocation, ComputeIMRPhenDPhaseConnectionCoefficients, DPhiInsAnsatzInt, DPhiIntAnsatz, DPhiMRD, FinalSpin0815, PhiInsAnsatzInt, PhiIntAnsatz, PhiMRDAnsatzInt, PNPhasingSeriesTaylorF2, alphaFits, amp0Func, betaFits, chiPN, fmaxCalc, fringdown, gamma_funs, rho_funs, sigmaFits
 
 
 @njit()
-def PhiInsPrefactorsMt(eta, Mt_sec, chis, chia, chi):
+def PhiInsPrefactorsMt(eta: float, Mt_sec: float, chis: float, chia: float, chi: float) -> tuple[tuple[float, float, float, float, float, float, float, float, float, float, float], tuple[float, float]]:
     """Helper function to get the prefactors for PhiIns"""
     v, vlogv = PNPhasingSeriesTaylorF2(eta, chis, chia)
     #  # PN phasing series
@@ -40,7 +41,7 @@ def PhiInsPrefactorsMt(eta, Mt_sec, chis, chia, chi):
 
 
 @njit()
-def AmpInsPrefactorsMt(Mt_sec, eta, chis, chia, rhos):
+def AmpInsPrefactorsMt(Mt_sec: float, eta: float, chis: float, chia: float, rhos: tuple[float, float, float]) -> tuple[float, float, float, float, float, float, float, float]:
     """Helper function to get the prefactors for AmpIns"""
     rho1 = rhos[0]
     rho2 = rhos[1]
@@ -73,7 +74,7 @@ def AmpInsPrefactorsMt(Mt_sec, eta, chis, chia, rhos):
 
 
 @njit()
-def AmpInsAnsatzInplace(Amps, fs, Mt_sec, eta, chis, chia, chi, amp_mult, NF_low, NF):
+def AmpInsAnsatzInplace(Amps: NDArray[np.floating], fs: NDArray[np.floating], Mt_sec: float, eta: float, chis: float, chia: float, chi: float, amp_mult: float, NF_low: int, NF: int) -> NDArray[np.floating]:
     """The Newtonian term in LAL is fine and we should use exactly the same (either hardcoded or call).
     We just use the Mathematica expression for convenience.
     Inspiral amplitude plus rho phenom coefficents. rho coefficients computed in rho_funs function.
@@ -103,7 +104,7 @@ def AmpInsAnsatzInplace(Amps, fs, Mt_sec, eta, chis, chia, chi, amp_mult, NF_low
 
 
 @njit()
-def AmpIntAnsatzInplace(Amps, fs, Mt_sec, fRD, fDM, eta, chis, chia, chi, amp_mult, NF_low, NF):
+def AmpIntAnsatzInplace(Amps: NDArray[np.floating], fs: NDArray[np.floating], Mt_sec: float, fRD: float, fDM: float, eta: float, chis: float, chia: float, chi: float, amp_mult: float, NF_low: int, NF: int) -> NDArray[np.floating]:
     """Ansatz for the intermediate amplitude. Equation 21 arXiv:1508.07253"""
     deltas = ComputeDeltasFromCollocation(eta, chis, chia, chi, fRD, fDM)
     amp0 = amp_mult / Mt_sec**(7 / 6)
@@ -115,7 +116,7 @@ def AmpIntAnsatzInplace(Amps, fs, Mt_sec, fRD, fDM, eta, chis, chia, chi, amp_mu
 
 
 @njit()
-def AmpMRDAnsatzInplace(Amps, fs, Mt_sec, fRD, fDM, eta, chi, amp_mult, NF_low, NF):
+def AmpMRDAnsatzInplace(Amps: NDArray[np.floating], fs: NDArray[np.floating], Mt_sec: float, fRD: float, fDM: float, eta: float, chi: float, amp_mult: float, NF_low: int, NF: int) -> NDArray[np.floating]:
     """Ansatz for the merger-ringdown amplitude. Equation 19 arXiv:1508.07253"""
     gammas = gamma_funs(eta, chi)
     gamma1 = gammas[0]
@@ -135,7 +136,7 @@ def AmpMRDAnsatzInplace(Amps, fs, Mt_sec, fRD, fDM, eta, chi, amp_mult, NF_low, 
 
 
 @njit()
-def AmpPhaseSeriesInsAnsatz(Phi, dPhi, ddPhi, Amps, fs, Mt_sec, eta, chis, chia, chi, phi_ref, TTRef, amp_mult, NF_low, NF):
+def AmpPhaseSeriesInsAnsatz(Phi: NDArray[np.floating], dPhi: NDArray[np.floating], ddPhi: NDArray[np.floating], Amps: NDArray[np.floating], fs: NDArray[np.floating], Mt_sec: float, eta: float, chis: float, chia: float, chi: float, phi_ref: float, TTRef: float, amp_mult: float, NF_low: int, NF: int) -> tuple[NDArray[np.floating], NDArray[np.floating], NDArray[np.floating], NDArray[np.floating]]:
     """Ansatz for the inspiral phase. and amplitude
     We call the LAL TF2 coefficients here.
     The exact values of the coefficients used are given
@@ -217,7 +218,7 @@ def AmpPhaseSeriesInsAnsatz(Phi, dPhi, ddPhi, Amps, fs, Mt_sec, eta, chis, chia,
 
 
 @njit()
-def PhiSeriesInsAnsatz(Phi, dPhi, ddPhi, fs, Mt_sec, eta, chis, chia, chi, phi_ref, TTRef, NF_low, NF):
+def PhiSeriesInsAnsatz(Phi: NDArray[np.floating], dPhi: NDArray[np.floating], ddPhi: NDArray[np.floating], fs: NDArray[np.floating], Mt_sec: float, eta: float, chis: float, chia: float, chi: float, phi_ref: float, TTRef: float, NF_low: int, NF: int) -> tuple[NDArray[np.floating], NDArray[np.floating], NDArray[np.floating]]:
     """Ansatz for the inspiral phase.
     We call the LAL TF2 coefficients here.
     The exact values of the coefficients used are given
@@ -283,7 +284,7 @@ def PhiSeriesInsAnsatz(Phi, dPhi, ddPhi, fs, Mt_sec, eta, chis, chia, chi, phi_r
 
 
 @njit()
-def PhiSeriesIntAnsatz(Phi, dPhi, ddPhi, fs, Mt_sec, eta, chi, phi_ref, TTRef, NF_low, NF):
+def PhiSeriesIntAnsatz(Phi: NDArray[np.floating], dPhi: NDArray[np.floating], ddPhi: NDArray[np.floating], fs: NDArray[np.floating], Mt_sec: float, eta: float, chi: float, phi_ref: float, TTRef: float, NF_low: int, NF: int) -> tuple[NDArray[np.floating], NDArray[np.floating], NDArray[np.floating]]:
     """Ansatz for the intermediate phase defined by Equation 16 arXiv:1508.07253"""
     #   ComputeIMRPhenDPhaseConnectionCoefficients
     #   IMRPhenDPhase
@@ -318,7 +319,7 @@ def PhiSeriesIntAnsatz(Phi, dPhi, ddPhi, fs, Mt_sec, eta, chi, phi_ref, TTRef, N
 
 
 @njit()
-def PhiSeriesMRDAnsatz(Phi, dPhi, ddPhi, fs, Mt_sec, MfRD, MfDM, eta, chi, phi_ref, TTRef, NF_low, NF):
+def PhiSeriesMRDAnsatz(Phi: NDArray[np.floating], dPhi: NDArray[np.floating], ddPhi: NDArray[np.floating], fs: NDArray[np.floating], Mt_sec: float, MfRD: float, MfDM: float, eta: float, chi: float, phi_ref: float, TTRef: float, NF_low: int, NF: int) -> tuple[NDArray[np.floating], NDArray[np.floating], NDArray[np.floating]]:
     """Ansatz for the merger-ringdown phase Equation 14 arXiv:1508.07253"""
     alphas = alphaFits(eta, chi)
     coeff0 = alphas[0] / eta * Mt_sec
@@ -361,7 +362,7 @@ def PhiSeriesMRDAnsatz(Phi, dPhi, ddPhi, fs, Mt_sec, MfRD, MfDM, eta, chi, phi_r
 
 # / Phase: glueing function ################
 @njit()
-def IMRPhenDPhaseFI(Phis, times, timeps, fs, Mt_sec, eta, chis, chia, NF, MfRef_in, phi0):
+def IMRPhenDPhaseFI(Phis: NDArray[np.floating], times: NDArray[np.floating], timeps: NDArray[np.floating], fs: NDArray[np.floating], Mt_sec: float, eta: float, chis: float, chia: float, NF: int, MfRef_in: float, phi0: float) -> tuple[NDArray[np.floating], NDArray[np.floating], NDArray[np.floating], float, float, int]:
     """This function computes the IMR phase given phenom coefficients.
     Defined in VIII. Full IMR Waveforms arXiv:1508.07253
     The inspiral, intermediate and merger-ringdown phase parts
@@ -369,14 +370,14 @@ def IMRPhenDPhaseFI(Phis, times, timeps, fs, Mt_sec, eta, chis, chia, NF, MfRef_
     Mfs must be sorted
     modified to anchor frequencies to FI at t=0
     """
-    chi = chiPN(eta, chis, chia)
-    finspin = FinalSpin0815(eta, chis, chia)
+    chi: float = chiPN(eta, chis, chia)
+    finspin: float = FinalSpin0815(eta, chis, chia)
     fRD, fDM = fringdown(eta, chis, chia, finspin)
 
     #   Transition frequencies
     #   Defined in VIII. Full IMR Waveforms arXiv:1508.07253
-    MfMRDJoinPhi = fRD / 2
-    MfMRDJoinAmp = fmaxCalc(fRD, fDM, eta, chi)
+    MfMRDJoinPhi: float = fRD / 2
+    MfMRDJoinAmp: float = fmaxCalc(fRD, fDM, eta, chi)
 
     # Compute coefficients to make phase C^1 continuous (phase and first derivative)
     C1Int, C2Int, C1MRD, C2MRD = ComputeIMRPhenDPhaseConnectionCoefficients(fRD, fDM, eta, chis, chia, chi, MfMRDJoinPhi)
@@ -387,20 +388,20 @@ def IMRPhenDPhaseFI(Phis, times, timeps, fs, Mt_sec, eta, chis, chia, NF, MfRef_
 
     # NOTE: opposite Fourier convention with respect to PhenomD - to ensure 22 mode has power for positive f
     if fs[-1] > imrc.f_CUT / Mt_sec:
-        itrFCut = np.searchsorted(fs, imrc.f_CUT / Mt_sec, side='right')
+        itrFCut: int = int(np.searchsorted(fs, imrc.f_CUT / Mt_sec, side='right'))
     else:
         itrFCut = NF
 
     # NOTE: previously MfRef=0 was by default MfRef=fmin, now MfRef defaults to MfmaxCalc (fpeak in the paper)
     # If fpeak is outside of the frequency range, take the last frequency
     if MfRef_in == 0.:
-        MfRef = min(MfMRDJoinAmp, Mt_sec * fs[itrFCut - 1])
+        MfRef: float = min(MfMRDJoinAmp, float(Mt_sec * fs[itrFCut - 1]))
     else:
         MfRef = MfRef_in
 
     if MfRef < imrc.PHI_fJoin_INS:
-        TTRef = -DPhiInsAnsatzInt(MfRef, eta, chis, chia, chi)
-        phifRef = PhiInsAnsatzInt(MfRef, eta, chis, chia, chi)
+        TTRef: float = -DPhiInsAnsatzInt(MfRef, eta, chis, chia, chi)
+        phifRef: float = PhiInsAnsatzInt(MfRef, eta, chis, chia, chi)
     elif MfRef < MfMRDJoinPhi:
         TTRef = -DPhiIntAnsatz(MfRef, eta, chi) - C2Int
         phifRef = PhiIntAnsatz(MfRef, eta, chi) + C1Int + C2Int * MfRef
@@ -413,25 +414,25 @@ def IMRPhenDPhaseFI(Phis, times, timeps, fs, Mt_sec, eta, chis, chia, NF, MfRef_
     phifRef += 2 * np.pi * TTRef * MfRef / Mt_sec + 2 * phi0
 
     if fs[itrFCut - 1] < imrc.PHI_fJoin_INS / Mt_sec:
-        itrfMRDPhi = itrFCut
-        itrfIntPhi = itrFCut
+        itrfMRDPhi: int = itrFCut
+        itrfIntPhi: int = itrFCut
     elif fs[itrFCut - 1] < MfMRDJoinPhi / Mt_sec:
         itrfMRDPhi = itrFCut
-        itrfIntPhi = np.searchsorted(fs, imrc.PHI_fJoin_INS / Mt_sec)
+        itrfIntPhi = int(np.searchsorted(fs, imrc.PHI_fJoin_INS / Mt_sec))
     else:
-        itrfMRDPhi = np.searchsorted(fs, MfMRDJoinPhi / Mt_sec)
-        itrfIntPhi = np.searchsorted(fs, imrc.PHI_fJoin_INS / Mt_sec)
+        itrfMRDPhi = int(np.searchsorted(fs, MfMRDJoinPhi / Mt_sec))
+        itrfIntPhi = int(np.searchsorted(fs, imrc.PHI_fJoin_INS / Mt_sec))
 
     # itrfMRDPhi = itrFCut
     # itrfIntPhi = itrFCut
 
-    TTRefIns = TTRef
-    TTRefInt = TTRef + C2Int * Mt_sec / (2 * np.pi)
-    TTRefMRD = TTRef + C2MRD * Mt_sec / (2 * np.pi)
+    TTRefIns: float = TTRef
+    TTRefInt: float = TTRef + C2Int * Mt_sec / (2 * np.pi)
+    TTRefMRD: float = TTRef + C2MRD * Mt_sec / (2 * np.pi)
 
-    phifRefIns = phifRef
-    phifRefInt = phifRef - C1Int
-    phifRefMRD = phifRef - C1MRD
+    phifRefIns: float = phifRef
+    phifRefInt: float = phifRef - C1Int
+    phifRefMRD: float = phifRef - C1MRD
 
     if itrfIntPhi > 0:
         Phis, times, timeps = PhiSeriesInsAnsatz(Phis, times, timeps, fs, Mt_sec, eta, chis, chia, chi, phifRefIns, TTRefIns, 0, itrfIntPhi)  # Ins range
@@ -448,7 +449,7 @@ def IMRPhenDPhaseFI(Phis, times, timeps, fs, Mt_sec, eta, chis, chia, NF, MfRef_
 
 
 # @njit()
-def IMRPhenDAmplitudeFI(Amps, fs, Mt_sec, eta, chis, chia, NF, amp_mult=1.):
+def IMRPhenDAmplitudeFI(Amps: NDArray[np.floating], fs: NDArray[np.floating], Mt_sec: float, eta: float, chis: float, chia: float, NF: int, amp_mult: float = 1.) -> NDArray[np.floating]:
     """This function computes the IMR amplitude given phenom coefficients.
     Defined in VIII. Full IMR Waveforms arXiv:1508.07253
     The inspiral, intermediate and merger-ringdown amplitude parts
@@ -461,7 +462,7 @@ def IMRPhenDAmplitudeFI(Amps, fs, Mt_sec, eta, chis, chia, NF, amp_mult=1.):
     MfMRDJoinAmp = fmaxCalc(fRD, fDM, eta, chi)
 
     if fs[-1] > imrc.f_CUT / Mt_sec:
-        itrFCut = np.searchsorted(fs, imrc.f_CUT / Mt_sec, side='right')
+        itrFCut = int(np.searchsorted(fs, imrc.f_CUT / Mt_sec, side='right'))
     else:
         itrFCut = NF
 
@@ -472,13 +473,13 @@ def IMRPhenDAmplitudeFI(Amps, fs, Mt_sec, eta, chis, chia, NF, amp_mult=1.):
         itrfIntAmp = itrFCut
     elif fs[itrFCut - 1] < MfMRDJoinAmp / Mt_sec:
         itrfMRDAmp = itrFCut
-        itrfIntAmp = np.searchsorted(fs, imrc.AMP_fJoin_INS / Mt_sec)
+        itrfIntAmp = int(np.searchsorted(fs, imrc.AMP_fJoin_INS / Mt_sec))
     else:
-        itrfMRDAmp = np.searchsorted(fs, MfMRDJoinAmp / Mt_sec)
-        itrfIntAmp = np.searchsorted(fs, imrc.AMP_fJoin_INS / Mt_sec)
+        itrfMRDAmp = int(np.searchsorted(fs, MfMRDJoinAmp / Mt_sec))
+        itrfIntAmp = int(np.searchsorted(fs, imrc.AMP_fJoin_INS / Mt_sec))
 
     #   split the calculation to just 1 of 3 possible mutually exclusive ranges
-    amp0 = amp_mult * amp0Func(eta)
+    amp0: float = amp_mult * amp0Func(eta)
     if itrfIntAmp > 0:
         Amps = AmpInsAnsatzInplace(Amps, fs, Mt_sec, eta, chis, chia, chi, amp0, 0, itrfIntAmp)  # Inspiral range
     if itrfIntAmp < itrfMRDAmp:
@@ -491,7 +492,7 @@ def IMRPhenDAmplitudeFI(Amps, fs, Mt_sec, eta, chis, chia, NF, amp_mult=1.):
 
 
 @njit()
-def IMRPhenDAmpPhaseFI_get_TTRef(Mt_sec, eta, chis, chia, MfRef_in, imr_default_t=0, t_offset=0.):
+def IMRPhenDAmpPhaseFI_get_TTRef(Mt_sec: float, eta: float, chis: float, chia: float, MfRef_in: float, imr_default_t: int = 0, t_offset: float = 0.) -> float:
     """Get only TTRef given input FI at MfRef_in if imr_default_t is true, use the phasing convention from IMRPhenomD,
     otherwise try to set MfRef_in=Mf at t=0
     """
@@ -533,47 +534,47 @@ def IMRPhenDAmpPhaseFI_get_TTRef(Mt_sec, eta, chis, chia, MfRef_in, imr_default_
 
 
 @njit()
-def IMRPhenDAmpPhase_tc(Phis, times, timeps, Amps, fs, Mt_sec, eta, chis, chia, NF, TTRef, phifRef, amp_mult):
+def IMRPhenDAmpPhase_tc(Phis: NDArray[np.floating], times: NDArray[np.floating], timeps: NDArray[np.floating], Amps: NDArray[np.floating], fs: NDArray[np.floating], Mt_sec: float, eta: float, chis: float, chia: float, NF: int, TTRef: float, phifRef: float, amp_mult: float) -> tuple[NDArray[np.floating], NDArray[np.floating], NDArray[np.floating], NDArray[np.floating], int]:
     """Get both amplitude and phase in place at the same time given input TTRef"""
     # TODO reabsorb this now redundant function
-    chi = chiPN(eta, chis, chia)
-    finspin = FinalSpin0815(eta, chis, chia)
+    chi: float = chiPN(eta, chis, chia)
+    finspin: float = FinalSpin0815(eta, chis, chia)
     fRD, fDM = fringdown(eta, chis, chia, finspin)
 
     #   Transition frequencies
     #   Defined in VIII. Full IMR Waveforms arXiv:1508.07253
-    MfMRDJoinPhi = fRD / 2
-    MfMRDJoinAmp = fmaxCalc(fRD, fDM, eta, chi)
+    MfMRDJoinPhi: float = fRD / 2
+    MfMRDJoinAmp: float = fmaxCalc(fRD, fDM, eta, chi)
 
-    MfLast = fs[NF - 1] * Mt_sec
+    MfLast: float = fs[NF - 1] * Mt_sec
     if MfLast > imrc.f_CUT:
-        itrFCut = np.searchsorted(fs, imrc.f_CUT / Mt_sec, side='right')
+        itrFCut: int = int(np.searchsorted(fs, imrc.f_CUT / Mt_sec, side='right'))
         MfLast = fs[itrFCut - 1] * Mt_sec
     else:
         itrFCut = NF
 
     # TODO duplicate logic
     if MfLast < imrc.AMP_fJoin_INS:
-        itrfMRDAmp = itrFCut
-        itrfIntAmp = itrFCut
+        itrfMRDAmp: int = itrFCut
+        itrfIntAmp: int = itrFCut
     elif MfLast < MfMRDJoinAmp:
         itrfMRDAmp = itrFCut
-        itrfIntAmp = np.searchsorted(fs, imrc.AMP_fJoin_INS / Mt_sec)
+        itrfIntAmp = int(np.searchsorted(fs, imrc.AMP_fJoin_INS / Mt_sec))
     else:
-        itrfIntAmp = np.searchsorted(fs, imrc.AMP_fJoin_INS / Mt_sec)
-        itrfMRDAmp = np.searchsorted(fs, MfMRDJoinAmp / Mt_sec)
+        itrfIntAmp = int(np.searchsorted(fs, imrc.AMP_fJoin_INS / Mt_sec))
+        itrfMRDAmp = int(np.searchsorted(fs, MfMRDJoinAmp / Mt_sec))
 
     if MfLast < imrc.PHI_fJoin_INS:
-        itrfMRDPhi = itrFCut
-        itrfIntPhi = itrFCut
+        itrfMRDPhi: int = itrFCut
+        itrfIntPhi: int = itrFCut
     elif MfLast < MfMRDJoinPhi:
         itrfMRDPhi = itrFCut
-        itrfIntPhi = np.searchsorted(fs, imrc.PHI_fJoin_INS / Mt_sec)
+        itrfIntPhi = int(np.searchsorted(fs, imrc.PHI_fJoin_INS / Mt_sec))
     else:
-        itrfMRDPhi = np.searchsorted(fs, MfMRDJoinPhi / Mt_sec)
-        itrfIntPhi = np.searchsorted(fs, imrc.PHI_fJoin_INS / Mt_sec)
+        itrfMRDPhi = int(np.searchsorted(fs, MfMRDJoinPhi / Mt_sec))
+        itrfIntPhi = int(np.searchsorted(fs, imrc.PHI_fJoin_INS / Mt_sec))
 
-    itrfIntMax = max(itrfIntPhi, itrfIntAmp)
+    itrfIntMax: int = max(itrfIntPhi, itrfIntAmp)
 
     # time shift so that reference frequency is at t=0
     # For details see https:#www.lsc-group.phys.uwm.edu/ligovirgo/cbcnote/WaveformsReview/IMRPhenomDCodeReview/timPD_EDOMain
@@ -582,17 +583,17 @@ def IMRPhenDAmpPhase_tc(Phis, times, timeps, Amps, fs, Mt_sec, eta, chis, chia, 
     # Compute coefficients to make phase C^1 continuous (phase and first derivative)
     C1Int, C2Int, C1MRD, C2MRD = ComputeIMRPhenDPhaseConnectionCoefficients(fRD, fDM, eta, chis, chia, chi, MfMRDJoinPhi)
 
-    dm = Mt_sec / (2 * np.pi)
+    dm: float = Mt_sec / (2 * np.pi)
 
-    TTRefIns = TTRef
-    TTRefInt = TTRefIns + C2Int * dm
-    TTRefMRD = TTRefIns + C2MRD * dm
+    TTRefIns: float = TTRef
+    TTRefInt: float = TTRefIns + C2Int * dm
+    TTRefMRD: float = TTRefIns + C2MRD * dm
 
-    phifRefIns = phifRef
-    phifRefInt = phifRef - C1Int
-    phifRefMRD = phifRef - C1MRD
+    phifRefIns: float = phifRef
+    phifRefInt: float = phifRef - C1Int
+    phifRefMRD: float = phifRef - C1MRD
 
-    amp0 = amp_mult * amp0Func(eta)
+    amp0: float = amp_mult * amp0Func(eta)
 
     # Technically, this wastes a small amount of operations filling values that will be overwritten by the intermediate.
     # In practice the combined method is so much faster that it justifies the wasted computation
@@ -621,7 +622,7 @@ def IMRPhenDAmpPhase_tc(Phis, times, timeps, Amps, fs, Mt_sec, eta, chis, chia, 
 
 
 @njit()
-def IMRPhenDAmpPhaseFI(Phis, times, timeps, Amps, fs, Mt_sec, eta, chis, chia, NF, MfRef_in, phi0, amp_mult, imr_default_t=0, t_offset=0.):
+def IMRPhenDAmpPhaseFI(Phis: NDArray[np.floating], times: NDArray[np.floating], timeps: NDArray[np.floating], Amps: NDArray[np.floating], fs: NDArray[np.floating], Mt_sec: float, eta: float, chis: float, chia: float, NF: int, MfRef_in: float, phi0: float, amp_mult: float, imr_default_t: int = 0, t_offset: float = 0.) -> tuple[NDArray[np.floating], NDArray[np.floating], NDArray[np.floating], NDArray[np.floating], float, float, int]:
     """Get both amplitude and phase in place at the same time given input FI at MfRef_in if imr_default_t is true, use the phasing convention from IMRPhenomD,
     otherwise try to set MfRef_in=Mf at t=0
     """

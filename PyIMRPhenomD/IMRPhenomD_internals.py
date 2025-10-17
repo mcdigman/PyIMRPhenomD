@@ -21,6 +21,9 @@
 # LAL independent code (C) 2017 Michael Puerrer
 #
 # /**
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, overload
 
 import numpy as np
 from numba import njit
@@ -28,12 +31,15 @@ from numba import njit
 import PyIMRPhenomD.IMRPhenomD_const as imrc
 from PyIMRPhenomD.IMRPhenomD_fring_helper import EradRational0815, fdamp_interp, fring_interp
 
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
 # Miscellaneous functions ###############
 
 
 class COMPLEX16FrequencySeries:
     """SM: structure for downsampled FD 22-mode Amp/Phase waveforms"""
-    def __init__(self, epoch, f0, deltaF, length):
+    def __init__(self, epoch: float, f0: float, deltaF: float, length: int) -> None:
         """Create structure for downsampled FD 22-mode Amp/Phase waveforms"""
         self.epoch = epoch
         self.f0 = f0
@@ -45,7 +51,7 @@ class COMPLEX16FrequencySeries:
 
 class AmpPhaseFDWaveform:
     """structure to store an amp/phase/time FD waveform"""
-    def __init__(self, length, freq, amp, phase, time, timep, fRef=0., t0=0.):
+    def __init__(self, length: int, freq: NDArray[np.floating], amp: NDArray[np.floating], phase: NDArray[np.floating], time: NDArray[np.floating], timep: NDArray[np.floating], fRef: float = 0., t0: float = 0.) -> None:
         """Create structure for Amp/phase/time FD waveforms"""
         self.length = length
         self.freq = freq
@@ -59,7 +65,7 @@ class AmpPhaseFDWaveform:
 
 # /
 @njit()
-def PNPhasingSeriesTaylorF2(eta, chis, chia):
+def PNPhasingSeriesTaylorF2(eta: float, chis: float, chia: float) -> tuple[tuple[float, float, float, float, float, float, float, float], tuple[float, float, float, float, float, float, float, float]]:
     """From LALSimInspiralPNCoefficients.c
     The phasing function for TaylorF2 frequency-domain waveform.
     This function is tested in ../test/PNCoefficients.c for consistency
@@ -70,7 +76,7 @@ def PNPhasingSeriesTaylorF2(eta, chis, chia):
     chi2, Component of dimensionless spin 2 along Lhat
     """
     if eta < 0.25:
-        delta = np.sqrt(1 - 4 * eta)
+        delta: float = np.sqrt(1 - 4 * eta)
     else:
         delta = 0.
 
@@ -79,39 +85,39 @@ def PNPhasingSeriesTaylorF2(eta, chis, chia):
     # There's a division by mtotal^2 in both the energy and flux terms
     # We just absorb the division by mtotal^2 into SL and dSigmaL/
 
-    SL = chis * (1 - 2 * eta) + chia * delta
-    dSigmaL = -delta * (chis * delta + chia)
+    SL: float = chis * (1 - 2 * eta) + chia * delta
+    dSigmaL: float = -delta * (chis * delta + chia)
 
-    pfaN = 3 / (128 * eta)
+    pfaN: float = 3 / (128 * eta)
 
-#    /* Non-spin phasing terms - see arXiv:0907.0700, Eq. 3.18 */
-    v0 = 1.
-    v1 = 0.
-    v2 = 5 / 9 * (743 / 84 + 11 * eta)
-    v3 = -16 * np.pi
-    v4 = 5 / 72 * (3058673 / 7056 + 5429 / 7 * eta + 617 * eta**2)
-    v5 = 5 / 9 * np.pi * (7729 / 84 - 13 * eta)
-    vlogv5 = 5 / 3 * np.pi * (7729 / 84 - 13 * eta)
-    v6 = (11583231236531 / 4694215680 - 640 / 3 * np.pi**2 - 6848 / 21 * imrc.GAMMA) \
+    # Non-spin phasing terms - see arXiv:0907.0700, Eq. 3.18
+    v0: float = 1.
+    v1: float = 0.
+    v2: float = 5 / 9 * (743 / 84 + 11 * eta)
+    v3: float = -16 * np.pi
+    v4: float = 5 / 72 * (3058673 / 7056 + 5429 / 7 * eta + 617 * eta**2)
+    v5: float = 5 / 9 * np.pi * (7729 / 84 - 13 * eta)
+    vlogv5: float = 5 / 3 * np.pi * (7729 / 84 - 13 * eta)
+    v6: float = (11583231236531 / 4694215680 - 640 / 3 * np.pi**2 - 6848 / 21 * imrc.GAMMA) \
             + (-15737765635 / 3048192 + 2255 / 12 * np.pi**2) * eta + 76055 / 1728 * eta**2 - 127825 / 1296 * eta**3 \
             + -6848 / 21 * np.log(4.)
-    vlogv6 = -6848 / 21
-    v7 = np.pi * (77096675 / 254016 + 378515 / 1512 * eta - 74045 / 756 * eta**2)
+    vlogv6: float = -6848 / 21
+    v7: float = np.pi * (77096675 / 254016 + 378515 / 1512 * eta - 74045 / 756 * eta**2)
 
 #     Compute 2.0PN SS, QM, and self-spin */
 #     See Eq. (6.24) in arXiv:0810.5336
 #     9b,c,d in arXiv:astro-ph/0504538
-    pn_sigma = 1 / 16 * (chia**2 * (81 - 320 * eta) + chis**2 * (81 - 4 * eta) + 162 * chis * chia * delta)
+    pn_sigma: float = 1 / 16 * (chia**2 * (81 - 320 * eta) + chis**2 * (81 - 4 * eta) + 162 * chis * chia * delta)
 
     if imrc.include3PNSS:
-        pn_ss3 = 1 / 2016 * (70 * chia * chis * delta * (15103 - 13160 * eta)
+        pn_ss3: float = 1 / 2016 * (70 * chia * chis * delta * (15103 - 13160 * eta)
                         + 5 * chis**2 * (105721 + 4 * eta * (-46483 + 14056 * eta))
                         - 5 * chia**2 * (-105721 + 8 * eta * (52649 + 24192 * eta)))
     else:
         pn_ss3 = 0.
 
 #     Spin-orbit terms - can be derived from arXiv:1303.7412, Eq. 3.15-16 */
-    pn_gamma = (554345 / 1134 + 110 / 9 * eta) * SL + (13915 / 84 - 10 / 3 * eta) * dSigmaL
+    pn_gamma: float = (554345 / 1134 + 110 / 9 * eta) * SL + (13915 / 84 - 10 / 3 * eta) * dSigmaL
 
     v7 += (-8980424995 / 762048 + 6586595 / 756 * eta - 305 / 36 * eta**2) * SL - (170978035 / 48384 - 2876425 / 672 * eta - 4735 / 144 * eta**2) * dSigmaL
     v6 += np.pi / 3 * (3760 * SL + 1490 * dSigmaL) + pn_ss3
@@ -132,7 +138,7 @@ def PNPhasingSeriesTaylorF2(eta, chis, chia):
 
 
 @njit()
-def chiPN(eta, chis, chia):
+def chiPN(eta: float, chis: float, chia: float) -> float:
     """PN reduced spin parameter
     See Eq 5.9 in http:#arxiv.org/pdf/1107.1267v2.pdf
     Convention m1 >= m2 and chi1 is the spin on m1
@@ -148,7 +154,7 @@ def chiPN(eta, chis, chia):
 
 # Final Spin and Radiated Energy formulas described in 1508.07250
 @njit()
-def FinalSpin0815(eta, chis, chia):
+def FinalSpin0815(eta: float, chis: float, chia: float) -> float:
     """Formula to predict the final spin. Equation 3.6 arXiv:1508.07250
     s defined around Equation 3.6.
     """
@@ -171,17 +177,17 @@ def FinalSpin0815(eta, chis, chia):
 
 
 @njit()
-def fringdown(eta, chis, chia, finspin):
-    denom = (1 - EradRational0815(eta, chis, chia))
-    fRD = fring_interp(np.array([finspin]))[0] / denom
-    fDM = fdamp_interp(np.array([finspin]))[0] / denom
+def fringdown(eta: float, chis: float, chia: float, finspin: float) -> tuple[float, float]:
+    denom = (1.0 - EradRational0815(eta, chis, chia))
+    fRD: float = fring_interp(finspin) / denom
+    fDM: float = fdamp_interp(finspin) / denom
     return fRD, fDM
 
 # ****************************** Amplitude functions *******************************/
 
 
 @njit()
-def amp0Func(eta):
+def amp0Func(eta: float) -> float:
     """Amplitude scaling factor defined by eq. 17 in 1508.07253"""
     return np.sqrt(2 / 3) / np.pi**(1 / 6) * np.sqrt(eta)
 
@@ -189,7 +195,7 @@ def amp0Func(eta):
 
 
 @njit()
-def rho_funs(eta, chi):
+def rho_funs(eta: float, chi: float) -> tuple[float, float, float]:
     """Phenom coefficients rho1, ..., rho3 from direct fit
     AmpInsDFFitCoeffChiPNFunc[eta, chiPN]
     See corresponding row in Table 5 arXiv:1508.07253
@@ -211,7 +217,7 @@ def rho_funs(eta, chi):
 
 
 @njit()
-def AmpInsPrefactors(eta, chis, chia, rhos):
+def AmpInsPrefactors(eta: float, chis: float, chia: float, rhos: tuple[float, float, float]) -> tuple[float, float, float, float, float, float, float, float]:
     chi1 = chis + chia
     chi2 = chis - chia
     rho1 = rhos[0]
@@ -243,7 +249,11 @@ def AmpInsPrefactors(eta, chis, chia, rhos):
 
 
 @njit()
-def AmpInsAnsatz(Mfs, eta, chis, chia, chi, amp_mult=1.):
+@overload
+def AmpInsAnsatz(Mfs: float, eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> float: ...
+@overload
+def AmpInsAnsatz(Mfs: NDArray[np.floating], eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> NDArray[np.floating]: ...
+def AmpInsAnsatz(Mfs: float | NDArray[np.floating], eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> float | NDArray[np.floating]:
     """The Newtonian term in LAL is fine and we should use exactly the same (either hardcoded or call).
     We just use the Mathematica expression for convenience.
     Inspiral amplitude plus rho phenom coefficents. rho coefficients computed in rho_funs function.
@@ -268,7 +278,7 @@ def AmpInsAnsatz(Mfs, eta, chis, chia, chi, amp_mult=1.):
 
 
 @njit()
-def DAmpInsAnsatz(Mf, eta, chis, chia, chi, amp_mult=1.):
+def DAmpInsAnsatz(Mf: float, eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> float:
     """Take the AmpInsAnsatz expression pull of the f^7/6 and compute the first derivative
     with respect to frequency to get the expression below.
     """
@@ -302,7 +312,7 @@ def DAmpInsAnsatz(Mf, eta, chis, chia, chi, amp_mult=1.):
 
 
 @njit()
-def gamma_funs(eta, chi):
+def gamma_funs(eta: float, chi: float) -> tuple[float, float, float]:
     """Phenom coefficients gamma1, ..., gamma3
     AmpMRDAnsatzFunc[]
     See corresponding row in Table 5 arXiv:1508.07253
@@ -324,7 +334,11 @@ def gamma_funs(eta, chi):
 
 
 @njit()
-def AmpMRDAnsatz(Mfs, fRD, fDM, eta, chi, amp_mult=1.):
+@overload
+def AmpMRDAnsatz(Mfs: float, fRD: float, fDM: float, eta: float, chi: float, amp_mult: float = 1.) -> float: ...
+@overload
+def AmpMRDAnsatz(Mfs: NDArray[np.floating], fRD: float, fDM: float, eta: float, chi: float, amp_mult: float = 1.) -> NDArray[np.floating]: ...
+def AmpMRDAnsatz(Mfs: float | NDArray[np.floating], fRD: float, fDM: float, eta: float, chi: float, amp_mult: float = 1.) -> float | NDArray[np.floating]:
     """Ansatz for the merger-ringdown amplitude. Equation 19 arXiv:1508.07253"""
     gammas = gamma_funs(eta, chi)
     gamma1 = gammas[0]
@@ -338,7 +352,11 @@ def AmpMRDAnsatz(Mfs, fRD, fDM, eta, chi, amp_mult=1.):
 
 
 @njit()
-def DAmpMRDAnsatz(f, fRD, fDM, eta, chi, amp_mult=1.):
+@overload
+def DAmpMRDAnsatz(f: float, fRD: float, fDM: float, eta: float, chi: float, amp_mult: float = 1.) -> float: ...
+@overload
+def DAmpMRDAnsatz(f: NDArray[np.floating], fRD: float, fDM: float, eta: float, chi: float, amp_mult: float = 1.) -> NDArray[np.floating]: ...
+def DAmpMRDAnsatz(f: float | NDArray[np.floating], fRD: float, fDM: float, eta: float, chi: float, amp_mult: float = 1.) -> float | NDArray[np.floating]:
     """First frequency derivative of AmpMRDAnsatz*f(7/6)"""
     gammas = gamma_funs(eta, chi)
     gamma1 = gammas[0]
@@ -354,7 +372,7 @@ def DAmpMRDAnsatz(f, fRD, fDM, eta, chi, amp_mult=1.):
 
 
 @njit()
-def fmaxCalc(fRD, fDM, eta, chi):
+def fmaxCalc(fRD: float, fDM: float, eta: float, chi: float) -> float:
     """Equation 20 arXiv:1508.07253 (called f_peak in paper)
     analytic location of maximum of AmpMRDAnsatz
     """
@@ -370,7 +388,7 @@ def fmaxCalc(fRD, fDM, eta, chi):
 
 
 @njit()
-def AmpIntColFitCoeff(eta, chi):
+def AmpIntColFitCoeff(eta: float, chi: float) -> float:
     """The function name stands for 'Amplitude Intermediate Collocation Fit Coefficient'
     This is the 'v2' value in Table 5 of arXiv:1508.07253
     """
@@ -382,7 +400,7 @@ def AmpIntColFitCoeff(eta, chi):
 
 
 @njit()
-def ComputeDeltasFromCollocation(eta, chis, chia, chi, MfRD, MfDM):
+def ComputeDeltasFromCollocation(eta: float, chis: float, chia: float, chi: float, MfRD: float, MfDM: float) -> tuple[float, float, float, float, float]:
     """Calculates delta_i's
     Method described in arXiv:1508.07253 section 'Region IIa - intermediate'
     """
@@ -471,7 +489,7 @@ def ComputeDeltasFromCollocation(eta, chis, chia, chi, MfRD, MfDM):
 
 
 @njit()
-def AmpIntAnsatz(Mfs, fRD, fDM, eta, chis, chia, chi, amp_mult=1.):
+def AmpIntAnsatz(Mfs: NDArray[np.floating], fRD: float, fDM: float, eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> NDArray[np.floating]:
     """Ansatz for the intermediate amplitude. Equation 21 arXiv:1508.07253"""
     deltas = ComputeDeltasFromCollocation(eta, chis, chia, chi, fRD, fDM)
     # for itrf in range(NF_low,NF):
@@ -484,7 +502,7 @@ def AmpIntAnsatz(Mfs, fRD, fDM, eta, chis, chia, chi, amp_mult=1.):
 # / Amplitude: glueing function ##############
 
 # @njit()
-def IMRPhenDAmplitude(Mfs, eta, chis, chia, NF, amp_mult=1.):
+def IMRPhenDAmplitude(Mfs: NDArray[np.floating], eta: float, chis: float, chia: float, NF: int, amp_mult: float = 1.) -> NDArray[np.floating]:
     """This function computes the IMR amplitude given phenom coefficients.
     Defined in VIII. Full IMR Waveforms arXiv:1508.07253
     The inspiral, intermediate and merger-ringdown amplitude parts
@@ -501,7 +519,7 @@ def IMRPhenDAmplitude(Mfs, eta, chis, chia, NF, amp_mult=1.):
     Amps = np.zeros(NF)
 
     if Mfs[-1] > imrc.f_CUT:
-        itrFCut = np.searchsorted(Mfs, imrc.f_CUT, side='right')
+        itrFCut = int(np.searchsorted(Mfs, imrc.f_CUT, side='right'))
     else:
         itrFCut = NF
 
@@ -510,10 +528,10 @@ def IMRPhenDAmplitude(Mfs, eta, chis, chia, NF, amp_mult=1.):
         itrfInt = itrFCut
     elif Mfs[itrFCut - 1] < fMRDJoinAmp:
         itrfMRDAmp = itrFCut
-        itrfInt = np.searchsorted(Mfs, imrc.AMP_fJoin_INS)
+        itrfInt = int(np.searchsorted(Mfs, imrc.AMP_fJoin_INS))
     else:
-        itrfMRDAmp = np.searchsorted(Mfs, fMRDJoinAmp)
-        itrfInt = np.searchsorted(Mfs, imrc.AMP_fJoin_INS)
+        itrfMRDAmp = int(np.searchsorted(Mfs, fMRDJoinAmp))
+        itrfInt = int(np.searchsorted(Mfs, imrc.AMP_fJoin_INS))
 
     #   split the calculation to just 1 of 3 possible mutually exclusive ranges
     # if itrfInt>0:
@@ -528,11 +546,11 @@ def IMRPhenDAmplitude(Mfs, eta, chis, chia, NF, amp_mult=1.):
     return Amps
 
 
-# /********************************* Phase functions *********************************/
+# Phase functions
 #
-# Phase: Ringdown functions #############/
+# Phase: Ringdown functions
 @njit()
-def alphaFits(eta, chi):
+def alphaFits(eta: float, chi: float) -> tuple[float, float, float, float, float]:
     """alpha_i i=1,2,3,4,5 are the phenomenological intermediate coefficients depending on eta and chiPN
     PhiRingdownAnsatz is the ringdown phasing in terms of the alpha_i coefficients
     See corresponding row in Table 5 arXiv:1508.07253
@@ -562,7 +580,11 @@ def alphaFits(eta, chi):
 
 
 @njit()
-def PhiMRDAnsatzInt(Mf, fRD, fDM, eta, chi):
+@overload
+def PhiMRDAnsatzInt(Mf: float, fRD: float, fDM: float, eta: float, chi: float) -> float: ...
+@overload
+def PhiMRDAnsatzInt(Mf: NDArray[np.floating], fRD: float, fDM: float, eta: float, chi: float) -> float | NDArray[np.floating]: ...
+def PhiMRDAnsatzInt(Mf: float | NDArray[np.floating], fRD: float, fDM: float, eta: float, chi: float) -> float | NDArray[np.floating]:
     """Ansatz for the merger-ringdown phase Equation 14 arXiv:1508.07253"""
     alphas = alphaFits(eta, chi)
     fq = np.sqrt(np.sqrt(Mf))
@@ -571,7 +593,11 @@ def PhiMRDAnsatzInt(Mf, fRD, fDM, eta, chi):
 
 
 @njit()
-def DPhiMRD(Mf, fRD, fDM, eta, chi):
+@overload
+def DPhiMRD(Mf: float, fRD: float, fDM: float, eta: float, chi: float) -> float: ...
+@overload
+def DPhiMRD(Mf: NDArray[np.floating], fRD: float, fDM: float, eta: float, chi: float) -> NDArray[np.floating]: ...
+def DPhiMRD(Mf: float | NDArray[np.floating], fRD: float, fDM: float, eta: float, chi: float) -> float | NDArray[np.floating]:
     """First frequency derivative of PhiMRDAnsatzInt"""
     alphas = alphaFits(eta, chi)
     fq = np.sqrt(np.sqrt(Mf))
@@ -580,7 +606,7 @@ def DPhiMRD(Mf, fRD, fDM, eta, chi):
 
 
 @njit()
-def DDPhiMRD(Mf, fRD, fDM, eta, chi):
+def DDPhiMRD(Mf: float, fRD: float, fDM: float, eta: float, chi: float) -> float:
     """First frequency derivative of PhiMRDAnsatzInt"""
     alphas = alphaFits(eta, chi)
     fq = np.sqrt(np.sqrt(Mf))
@@ -591,7 +617,7 @@ def DDPhiMRD(Mf, fRD, fDM, eta, chi):
 
 
 @njit()
-def betaFits(eta, chi):
+def betaFits(eta: float, chi: float) -> tuple[float, float, float]:
     """beta_i i=1,2,3 are the phenomenological intermediate coefficients depending on eta and chiPN
     PhiIntAnsatz is the intermediate phasing in terms of the beta_i coefficients
     [Beta]1Fit = PhiIntFitCoeff[Chi]PNFunc[[Eta], [Chi]PN][[1]]
@@ -613,7 +639,11 @@ def betaFits(eta, chi):
 
 
 @njit()
-def PhiIntAnsatz(Mf, eta, chi):
+@overload
+def PhiIntAnsatz(Mf: float, eta: float, chi: float) -> float: ...
+@overload
+def PhiIntAnsatz(Mf: NDArray[np.floating], eta: float, chi: float) -> NDArray[np.floating]: ...
+def PhiIntAnsatz(Mf: float | NDArray[np.floating], eta: float, chi: float) -> float | NDArray[np.floating]:
     """Ansatz for the intermediate phase defined by Equation 16 arXiv:1508.07253"""
     #   ComputeIMRPhenDPhaseConnectionCoefficients
     #   IMRPhenDPhase
@@ -622,7 +652,11 @@ def PhiIntAnsatz(Mf, eta, chi):
 
 
 @njit()
-def DPhiIntAnsatz(Mf, eta, chi):
+@overload
+def DPhiIntAnsatz(Mf: float, eta: float, chi: float) -> float: ...
+@overload
+def DPhiIntAnsatz(Mf: NDArray[np.floating], eta: float, chi: float) -> NDArray[np.floating]: ...
+def DPhiIntAnsatz(Mf: float | NDArray[np.floating], eta: float, chi: float) -> float | NDArray[np.floating]:
     """First frequency derivative of PhiIntAnsatz
     (this time with 1./eta explicitly factored in)
     """
@@ -631,7 +665,11 @@ def DPhiIntAnsatz(Mf, eta, chi):
 
 
 @njit()
-def DDPhiIntAnsatz(Mf, eta, chi):
+@overload
+def DDPhiIntAnsatz(Mf: float, eta: float, chi: float) -> float: ...
+@overload
+def DDPhiIntAnsatz(Mf: NDArray[np.floating], eta: float, chi: float) -> NDArray[np.floating]: ...
+def DDPhiIntAnsatz(Mf: float | NDArray[np.floating], eta: float, chi: float) -> float | NDArray[np.floating]:
     """First frequency derivative of PhiIntAnsatz
     (this time with 1./eta explicitly factored in)
     """
@@ -639,10 +677,10 @@ def DDPhiIntAnsatz(Mf, eta, chi):
     return -4 * betas[2] / eta / Mf**5 - betas[1] / eta / Mf**2
 
 
-# / Phase: Inspiral functions ##############/
+# Phase: Inspiral functions
 
 @njit()
-def sigmaFits(eta, chi):
+def sigmaFits(eta: float, chi: float) -> tuple[float, float, float, float]:
     """sigma_i i=1,2,3,4 are the phenomenological inspiral coefficients depending on eta and chiPN
     PhiInsAnsatzInt is a souped up TF2 phasing which depends on the sigma_i coefficients
     See corresponding row in Table 5 arXiv:1508.07253
@@ -668,26 +706,26 @@ def sigmaFits(eta, chi):
 
 
 @njit()
-def PhiInsPrefactors(eta, chis, chia, chi):
+def PhiInsPrefactors(eta: float, chis: float, chia: float, chi: float) -> tuple[tuple[float, float, float, float, float, float, float, float, float, float, float], tuple[float, float]]:
     v, vlogv = PNPhasingSeriesTaylorF2(eta, chis, chia)
     #  # PN phasing series
-    minus_five_thirds = v[0] / np.pi**(5 / 3)
-    minus_one = v[2] / np.pi
-    minus_two_thirds = v[3] / np.pi**(2 / 3)
-    minus_third = v[4] / np.pi**(1 / 3)
-    initial_phasing = v[5] - np.pi / 4
-    third = v[6] * np.pi**(1 / 3)
-    two_thirds = v[7] * np.pi**(2 / 3)
+    minus_five_thirds: float = v[0] / np.pi**(5 / 3)
+    minus_one: float = v[2] / np.pi
+    minus_two_thirds: float = v[3] / np.pi**(2 / 3)
+    minus_third: float = v[4] / np.pi**(1 / 3)
+    initial_phasing: float = v[5] - np.pi / 4
+    third: float = v[6] * np.pi**(1 / 3)
+    two_thirds: float = v[7] * np.pi**(2 / 3)
 
-    zero_with_logv = vlogv[5]
-    third_with_logv = vlogv[6] * np.pi**(1 / 3)
+    zero_with_logv: float = vlogv[5]
+    third_with_logv: float = vlogv[6] * np.pi**(1 / 3)
 
     # higher order terms that were calibrated for PhenomD
     sigmas = sigmaFits(eta, chi)
-    one = sigmas[0] / eta
-    four_thirds = 3 / 4 * sigmas[1] / eta
-    five_thirds = 3 / 5 * sigmas[2] / eta
-    two = 1 / 2 * sigmas[3] / eta
+    one: float = sigmas[0] / eta
+    four_thirds: float = 3 / 4 * sigmas[1] / eta
+    five_thirds: float = 3 / 5 * sigmas[2] / eta
+    two: float = 1 / 2 * sigmas[3] / eta
     prefactors_ini = (minus_five_thirds, minus_one, minus_two_thirds, minus_third,
                         initial_phasing, third, two_thirds, one, four_thirds, five_thirds, two)
     prefactors_log = (zero_with_logv, third_with_logv)
@@ -695,7 +733,11 @@ def PhiInsPrefactors(eta, chis, chia, chi):
 
 
 @njit()
-def PhiInsAnsatzInt(Mfs, eta, chis, chia, chi):
+@overload
+def PhiInsAnsatzInt(Mfs: float, eta: float, chis: float, chia: float, chi: float) -> float: ...
+@overload
+def PhiInsAnsatzInt(Mfs: NDArray[np.floating], eta: float, chis: float, chia: float, chi: float) -> NDArray[np.floating]: ...
+def PhiInsAnsatzInt(Mfs: float | NDArray[np.floating], eta: float, chis: float, chia: float, chi: float) -> float | NDArray[np.floating]:
     """Ansatz for the inspiral phase.
     We call the LAL TF2 coefficients here.
     The exact values of the coefficients used are given
@@ -723,7 +765,11 @@ def PhiInsAnsatzInt(Mfs, eta, chis, chia, chi):
 
 
 @njit()
-def DPhiInsAnsatzInt(Mfs, eta, chis, chia, chi):
+@overload
+def DPhiInsAnsatzInt(Mfs: float, eta: float, chis: float, chia: float, chi: float) -> float: ...
+@overload
+def DPhiInsAnsatzInt(Mfs: NDArray[np.floating], eta: float, chis: float, chia: float, chi: float) -> NDArray[np.floating]: ...
+def DPhiInsAnsatzInt(Mfs: float | NDArray[np.floating], eta: float, chis: float, chia: float, chi: float) -> float | NDArray[np.floating]:
     """First frequency derivative of PhiInsAnsatzInt"""
     # Assemble PN phasing series
     fv = Mfs**(1 / 3)
@@ -747,7 +793,11 @@ def DPhiInsAnsatzInt(Mfs, eta, chis, chia, chi):
 
 
 @njit()
-def DDPhiInsAnsatzInt(Mfs, eta, chis, chia, chi):
+@overload
+def DDPhiInsAnsatzInt(Mfs: float, eta: float, chis: float, chia: float, chi: float) -> float: ...
+@overload
+def DDPhiInsAnsatzInt(Mfs: NDArray[np.floating], eta: float, chis: float, chia: float, chi: float) -> NDArray[np.floating]: ...
+def DDPhiInsAnsatzInt(Mfs: float | NDArray[np.floating], eta: float, chis: float, chia: float, chi: float) -> float | NDArray[np.floating]:
     """First frequency derivative of PhiInsAnsatzInt"""
     # Assemble PN phasing series
     fv = Mfs**(1 / 3)
@@ -768,16 +818,16 @@ def DDPhiInsAnsatzInt(Mfs, eta, chis, chia, chi):
             )
     return ddPhi
 
-# / Phase: glueing function ################
+# Phase: glueing function
 
 
-def NextPow2(n):
+def NextPow2(n: int | float) -> np.int64:
     """Use pow here, not bit-wise shift, as the latter seems to run against an upper cutoff long before SIZE_MAX, at least on some platforms"""
     return np.int64(2**np.ceil(np.log2(n)))
 
 
 @njit()
-def ComputeIMRPhenDPhaseConnectionCoefficients(fRD, fDM, eta, chis, chia, chi, fMRDJoinPhi):
+def ComputeIMRPhenDPhaseConnectionCoefficients(fRD: float, fDM: float, eta: float, chis: float, chia: float, chi: float, fMRDJoinPhi: float) -> tuple[float, float, float, float]:
     """This function aligns the three phase parts (inspiral, intermediate and merger-rindown)
     such that they are c^1 continuous at the transition frequencies
     Defined in VIII. Full IMR Waveforms arXiv:1508.07253
@@ -812,41 +862,41 @@ def ComputeIMRPhenDPhaseConnectionCoefficients(fRD, fDM, eta, chis, chia, chi, f
 
 
 # @njit()
-def IMRPhenDPhase(Mfs, Mt_sec, eta, chis, chia, NF, fRef_in, phi0):
+def IMRPhenDPhase(Mfs: NDArray[np.floating], Mt_sec: float, eta: float, chis: float, chia: float, NF: int, fRef_in: float, phi0: float) -> tuple[NDArray[np.floating], NDArray[np.floating], float, float, int]:
     """This function computes the IMR phase given phenom coefficients.
     Defined in VIII. Full IMR Waveforms arXiv:1508.07253
     The inspiral, intermediate and merger-ringdown phase parts
     split the calculation to just 1 of 3 possible mutually exclusive ranges
     Mfs must be sorted
     """
-    chi = chiPN(eta, chis, chia)
+    chi: float = chiPN(eta, chis, chia)
 
-    finspin = FinalSpin0815(eta, chis, chia)  # FinalSpin0815 - 0815 is like a version number
+    finspin: float = FinalSpin0815(eta, chis, chia)  # FinalSpin0815 - 0815 is like a version number
 
     fRD, fDM = fringdown(eta, chis, chia, finspin)
 
     #   Transition frequencies
     #   Defined in VIII. Full IMR Waveforms arXiv:1508.07253
-    fMRDJoinPhi = fRD / 2
-    fMRDJoinAmp = fmaxCalc(fRD, fDM, eta, chi)
+    fMRDJoinPhi: float = fRD / 2
+    fMRDJoinAmp: float = fmaxCalc(fRD, fDM, eta, chi)
 
     # Compute coefficients to make phase C^1 continuous (phase and first derivative)
     C1Int, C2Int, C1MRD, C2MRD = ComputeIMRPhenDPhaseConnectionCoefficients(fRD, fDM, eta, chis, chia, chi, fMRDJoinPhi)
 
     # time shift so that peak amplitude is approximately at t=0
     # For details see https:#www.lsc-group.phys.uwm.edu/ligovirgo/cbcnote/WaveformsReview/IMRPhenomDCodeReview/timPD_EDOMain
-    TTRef = -DPhiMRD(fMRDJoinAmp, fRD, fDM, eta, chi)
+    TTRef: float = -DPhiMRD(fMRDJoinAmp, fRD, fDM, eta, chi)
 
     # NOTE: opposite Fourier convention with respect to PhenomD - to ensure 22 mode has power for positive f
     if Mfs[-1] > imrc.f_CUT:
-        itrFCut = np.searchsorted(Mfs, imrc.f_CUT, side='right')
+        itrFCut: int = int(np.searchsorted(Mfs, imrc.f_CUT, side='right'))
     else:
         itrFCut = NF
 
     # NOTE: previously fRef=0 was by default fRef=fmin, now fRef defaults to fmaxCalc (fpeak in the paper)
     # If fpeak is outside of the frequency range, take the last frequency
     if fRef_in == 0.:
-        MfRef = min(fMRDJoinAmp, Mfs[itrFCut - 1])
+        MfRef: float = min(fMRDJoinAmp, Mfs[itrFCut - 1])
     else:
         MfRef = fRef_in
     if MfRef < imrc.PHI_fJoin_INS:
@@ -856,24 +906,24 @@ def IMRPhenDPhase(Mfs, Mt_sec, eta, chis, chia, NF, fRef_in, phi0):
     else:
         phifRef = PhiMRDAnsatzInt(MfRef, fRD, fDM, eta, chi) + C1MRD + C2MRD * MfRef  # MRD range
     phifRef += 2 * phi0 + TTRef * MfRef
-    phifRefIns = phifRef
-    phifRefInt = phifRef - C1Int
-    phifRefMRD = phifRef - C1MRD
+    phifRefIns: float = phifRef
+    phifRefInt: float = phifRef - C1Int
+    phifRefMRD: float = phifRef - C1MRD
 
-    TTRefIns = TTRef
-    TTRefInt = TTRef + C2Int
-    TTRefMRD = TTRef + C2MRD
+    TTRefIns: float = TTRef
+    TTRefInt: float = TTRef + C2Int
+    TTRefMRD: float = TTRef + C2MRD
 
     Phis = np.zeros(NF)
     if Mfs[itrFCut - 1] < imrc.PHI_fJoin_INS:
-        itrfMRDPhi = itrFCut
-        itrfInt = itrFCut
+        itrfMRDPhi: int = itrFCut
+        itrfInt: int = itrFCut
     elif Mfs[itrFCut - 1] < fMRDJoinPhi:
         itrfMRDPhi = itrFCut
-        itrfInt = np.searchsorted(Mfs, imrc.PHI_fJoin_INS)
+        itrfInt = int(np.searchsorted(Mfs, imrc.PHI_fJoin_INS))
     else:
-        itrfMRDPhi = np.searchsorted(Mfs, fMRDJoinPhi)
-        itrfInt = np.searchsorted(Mfs, imrc.PHI_fJoin_INS)
+        itrfMRDPhi = int(np.searchsorted(Mfs, fMRDJoinPhi))
+        itrfInt = int(np.searchsorted(Mfs, imrc.PHI_fJoin_INS))
 
     Phis[0:itrfInt] = PhiInsAnsatzInt(Mfs[0:itrfInt], eta, chis, chia, chi) - phifRefIns + TTRefIns * Mfs[0:itrfInt]  # Ins range
     Phis[itrfInt:itrfMRDPhi] = PhiIntAnsatz(Mfs[itrfInt:itrfMRDPhi], eta, chi) - phifRefInt + TTRefInt * Mfs[itrfInt:itrfMRDPhi]  # intermediate range

@@ -24,15 +24,16 @@
 
 import numpy as np
 from numba import njit
+from numpy.typing import NDArray
 
 # from interpolation.splines import filter_cubic, eval_cubic
-from pyakima.pyakima import akima_create_helper, cubic_call_vector
+from pyakima.pyakima import akima_create_helper, cubic_call_scalar
 
 # deleted second and second to last values so grid is uniform spaced
-NQ = 1001
-QNMData_a = np.linspace(-1., 1., NQ)
+NQ: int = 1001
+QNMData_a: NDArray[np.floating] = np.linspace(-1., 1., NQ)
 
-QNMData_fring = np.array([0.0464014, 0.0464197, 0.0464373, 0.0464526, 0.046473, 0.0464909, 0.0465084, 0.0465259,
+QNMData_fring: NDArray[np.floating] = np.array([0.0464014, 0.0464197, 0.0464373, 0.0464526, 0.046473, 0.0464909, 0.0465084, 0.0465259,
 0.0465435, 0.0465611, 0.0465789, 0.0465966, 0.0466144, 0.0466322,
 0.0466501, 0.0466679, 0.0466858, 0.0467038, 0.0467217, 0.0467397,
 0.0467577, 0.0467757, 0.0467937, 0.0468117, 0.0468298, 0.0468479,
@@ -198,7 +199,7 @@ QNMData_fring = np.array([0.0464014, 0.0464197, 0.0464373, 0.0464526, 0.046473, 
 0.130228, 0.131371, 0.132592, 0.133904, 0.135325, 0.136881, 0.138607,
 0.14056, 0.142833, 0.1456111, 0.1493707, 0.1579619])
 
-QNMData_fdamp = np.array([0.0140098, 0.0140106, 0.0140114, 0.0140177, 0.0140154, 0.0140148, 0.014015, 0.0140156,
+QNMData_fdamp: NDArray[np.floating] = np.array([0.0140098, 0.0140106, 0.0140114, 0.0140177, 0.0140154, 0.0140148, 0.014015, 0.0140156,
 0.0140164, 0.0140172, 0.0140181, 0.0140189, 0.0140198, 0.0140206,
 0.0140214, 0.0140223, 0.0140231, 0.0140239, 0.0140247, 0.0140256,
 0.0140264, 0.0140272, 0.014028, 0.0140288, 0.0140296, 0.0140305,
@@ -370,35 +371,32 @@ QNMData_fdamp = np.array([0.0140098, 0.0140106, 0.0140114, 0.0140177, 0.0140154,
 # fdamp_interp = InterpolatedUnivariateSpline(QNMData_a,QNMData_fdamp,k=3,ext=2)
 
 # gridS = ((-1.,1.,NQ),)
-grid = QNMData_a
-assert grid.shape == QNMData_fring.shape
-assert grid.shape == QNMData_fdamp.shape
+assert QNMData_a.shape == QNMData_fring.shape
+assert QNMData_a.shape == QNMData_fdamp.shape
 # coeffs_fring = filter_cubic(gridS,QNMData_fring)
 # coeffs_fdamp = filter_cubic(gridS,QNMData_fdamp)
 
-coeffs_fring = akima_create_helper(grid, QNMData_fring, corner_model=2)
-coeffs_fdamp = akima_create_helper(grid, QNMData_fdamp, corner_model=2)
+coeffs_fring = akima_create_helper(QNMData_a, QNMData_fring, corner_model=2)
+coeffs_fdamp = akima_create_helper(QNMData_a, QNMData_fdamp, corner_model=2)
 
 
 @njit()
-def fring_interp(finspin):
+def fring_interp(finspin: float) -> float:
     """Cubic spline interpolation for fring with scalar finspin"""
     # TODO can only handle scalar input right now
-    finspin = np.asarray(finspin)
-    return cubic_call_vector(finspin, coeffs_fring, ext=4)
+    return cubic_call_scalar(finspin, coeffs_fring, ext=4)
     # return eval_cubic(gridS,coeffs_fring,finspin.reshape((finspin.size,1)))
 
 
 @njit()
-def fdamp_interp(finspin):
+def fdamp_interp(finspin: float) -> float:
     """Cubic spline interpolation for fdamp with scalar finspin"""
     # TODO can only handle scalar input right now
-    finspin = np.asarray(finspin)
-    return cubic_call_vector(finspin, coeffs_fdamp, ext=4)
+    return cubic_call_scalar(finspin, coeffs_fdamp, ext=4)
 
 
 @njit()
-def EradRational0815(eta, chis, chia):
+def EradRational0815(eta: float, chis: float, chia: float) -> float:
     """Wrapper function for EradRational0815_s. arXiv:1508.07250
     convention m1>=m2
     """
@@ -418,14 +416,14 @@ def EradRational0815(eta, chis, chia):
     # return eval_cubic(gridS,coeffs_fdamp,finspin.reshape((finspin.size,1)))
 
 
-def fring(eta, chis, chia, finspin):
+def fring(eta: float, chis: float, chia: float, finspin: float) -> float:
     """Fring is the real part of the ringdown frequency
     1508.07250 figure 9
     """
     return fring_interp(finspin) / (1 - EradRational0815(eta, chis, chia))
 
 
-def fdamp(eta, chis, chia, finspin):
+def fdamp(eta: float, chis: float, chia: float, finspin: float) -> float:
     """Fdamp is the complex part of the ringdown frequency
     1508.07250 figure 9
     """

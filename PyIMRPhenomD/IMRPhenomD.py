@@ -19,10 +19,11 @@
 
 # LAL independent code (C) 2017 Michael Puerrer
 import numpy as np
+from numpy.typing import NDArray
 
 import PyIMRPhenomD.IMRPhenomD_const as imrc
 from PyIMRPhenomD.IMRPhenomD_deriv_internals import IMRPhenDAmpPhaseFI
-from PyIMRPhenomD.IMRPhenomD_internals import COMPLEX16FrequencySeries, FinalSpin0815, IMRPhenDAmplitude, IMRPhenDPhase, NextPow2
+from PyIMRPhenomD.IMRPhenomD_internals import AmpPhaseFDWaveform, COMPLEX16FrequencySeries, FinalSpin0815, IMRPhenDAmplitude, IMRPhenDPhase, NextPow2
 
 
 def IMRPhenomDGenerateFD_internal(phi0: float, fRef_in: float, deltaF: float, m1_in: float, m2_in: float, chi1_in: float, chi2_in: float, f_min: float, f_max: float, distance: float) -> COMPLEX16FrequencySeries:
@@ -30,100 +31,100 @@ def IMRPhenomDGenerateFD_internal(phi0: float, fRef_in: float, deltaF: float, m1
     given coefficients
     """
     # LIGOTimeGPS ligotimegps_zero = LIGOTIMEGPSZERO; # = {0, 0}
-    ligotimegps_zero = 0
+    ligotimegps_zero = 0.0
 
     if m1_in > m2_in:
-        chi1 = chi1_in
-        chi2 = chi2_in
-        m1 = m1_in
-        m2 = m2_in
+        chi1: float = chi1_in
+        chi2: float = chi2_in
+        m1: float = m1_in
+        m2: float = m2_in
     else:  # swap spins and masses
         chi1 = chi2_in
         chi2 = chi1_in
         m1 = m2_in
         m2 = m1_in
 
-    Mt = m1 + m2
-    eta = m1 * m2 / Mt**2
+    Mt: float = m1 + m2
+    eta: float = m1 * m2 / Mt**2
 
     if not 0 <= eta <= 0.25:
         msg = f'Unphysical eta {eta}. Must be between 0. and 0.25'
         raise ValueError(msg)
 
-    Mt_sec = Mt * imrc.MTSUN_SI
+    Mt_sec: float = Mt * imrc.MTSUN_SI
 
     # Compute the amplitude pre-factor
-    amp0 = 2 * np.sqrt(5. / (64. * np.pi)) * Mt**2 * imrc.MRSUN_SI * imrc.MTSUN_SI / distance
+    amp0: float = 2 * np.sqrt(5. / (64. * np.pi)) * Mt**2 * imrc.MRSUN_SI * imrc.MTSUN_SI / distance
 
     # Coalesce at t=0
     # shift by overall length in time
     ligotimegps_zero += -1. / deltaF
 
     # Allocate htilde
-    nf = NextPow2(f_max / deltaF) + 1
+    nf: int = int(NextPow2(f_max / deltaF) + 1)
     htilde = COMPLEX16FrequencySeries(ligotimegps_zero, 0.0, deltaF, nf)
 
     # range that will have actual non-zero waveform values generated
-    ind_min = np.int64(f_min / deltaF)
-    ind_max = np.int64(f_max / deltaF)
+    ind_min: int = int(np.int64(f_min / deltaF))
+    ind_max: int = int(np.int64(f_max / deltaF))
     if not ind_min <= ind_max <= nf:
         raise ValueError('minimum freq index %5d and maximum freq index %5d do not fulfill 0<=ind_min<=ind_max<=htilde->data>length=%5d.' % (ind_min, ind_max, nf))
 
     # Calculate phenomenological parameters
-    chis = (chi1 + chi2) / 2
-    chia = (chi1 - chi2) / 2
-    finspin = FinalSpin0815(eta, chis, chia)  # FinalSpin0815 - 0815 is like a version number
+    chis: float = (chi1 + chi2) / 2
+    chia: float = (chi1 - chi2) / 2
+    finspin: float = FinalSpin0815(eta, chis, chia)  # FinalSpin0815 - 0815 is like a version number
 
     if finspin < imrc.MIN_FINAL_SPIN:
         print('Final spin (Mf=%g) and ISCO frequency of this system are small, the model might misbehave here.' % (finspin))
 
     # Now generate the waveform
-    Mfs = Mt_sec * deltaF * np.arange(ind_min, ind_max)  # geometric frequency
+    Mfs: NDArray[np.floating] = Mt_sec * deltaF * np.arange(ind_min, ind_max)  # geometric frequency
     phis, _times, _t0, _MfRef, _itrFCut = IMRPhenDPhase(Mfs[ind_min:ind_max], Mt_sec, eta, chis, chia, ind_max - ind_min, fRef_in, phi0)
     amps = IMRPhenDAmplitude(Mfs[ind_min:ind_max], eta, chis, chia, ind_max - ind_min, amp_mult=amp0)
     htilde.data[:ind_max - ind_min] = amps[:ind_max - ind_min] * np.exp(-1j * phis[:ind_max - ind_min])
 
     for i in range(ind_min, ind_max):
-        phi = phis[i - ind_min]
-        amp = amps[i - ind_min]
+        phi: float = phis[i - ind_min]
+        amp: float = amps[i - ind_min]
         htilde.data[i] = amp * np.exp(-1j * phi)
     return htilde
 
 
-def IMRPhenomDGenerateh22FDAmpPhase_internal(h22, freq, phi0, fRef_in, m1_in, m2_in, chi1_in, chi2_in, distance):
+def IMRPhenomDGenerateh22FDAmpPhase_internal(h22: AmpPhaseFDWaveform, freq: NDArray[np.floating], phi0: float, fRef_in: float, m1_in: float, m2_in: float, chi1_in: float, chi2_in: float, distance: float) -> AmpPhaseFDWaveform:
     """SM: similar to IMRPhenomDGenerateFD_internal, but generates h22 FD amplitude and phase on a given set of frequencies"""
-    nf = freq.size
+    nf: int = freq.size
     if m1_in > m2_in:
-        chi1 = chi1_in
-        chi2 = chi2_in
-        m1 = m1_in
-        m2 = m2_in
+        chi1: float = chi1_in
+        chi2: float = chi2_in
+        m1: float = m1_in
+        m2: float = m2_in
     else:  # swap spins and masses
         chi1 = chi2_in
         chi2 = chi1_in
         m1 = m2_in
         m2 = m1_in
 
-    Mt = m1 + m2
-    eta = m1 * m2 / Mt**2
+    Mt: float = m1 + m2
+    eta: float = m1 * m2 / Mt**2
 
     if not 0. <= eta <= 0.25:
         msg = 'Unphysical eta. Must be between 0. and 0.25'
         raise ValueError(msg)
 
-    Mt_sec = Mt * imrc.MTSUN_SI
+    Mt_sec: float = Mt * imrc.MTSUN_SI
 
     # Compute the amplitude pre-factor
     # NOTE: we will output the amplitude of the 22 mode - so we remove the factor 2. * sqrt(5. / (64.*PI)), which is part of the Y22 spherical harmonic factor
-    amp0 = Mt**2 * imrc.MRSUN_SI * imrc.MTSUN_SI / distance
+    amp0: float = Mt**2 * imrc.MRSUN_SI * imrc.MTSUN_SI / distance
 
     # Max frequency covered by PhenomD
     # fCut = imrc.f_CUT / Mt_sec  # convert Mf -> Hz
 
     # Calculate phenomenological parameters
-    chis = (chi1 + chi2) / 2
-    chia = (chi1 - chi2) / 2
-    finspin = FinalSpin0815(eta, chis, chia)  # FinalSpin0815 - 0815 is like a version number
+    chis: float = (chi1 + chi2) / 2
+    chia: float = (chi1 - chi2) / 2
+    finspin: float = FinalSpin0815(eta, chis, chia)  # FinalSpin0815 - 0815 is like a version number
 
     if finspin < imrc.MIN_FINAL_SPIN:
         print('Final spin (Mf=%g) and ISCO frequency of this system are small, the model might misbehave here.' % (finspin))
@@ -145,13 +146,13 @@ def IMRPhenomDGenerateh22FDAmpPhase_internal(h22, freq, phi0, fRef_in, m1_in, m2
     return h22
 
 
-def IMRPhenomDGenerateh22FDAmpPhase(h22, freq, phi0, fRef_in, m1_SI, m2_SI, chi1, chi2, distance):
+def IMRPhenomDGenerateh22FDAmpPhase(h22: AmpPhaseFDWaveform, freq: NDArray[np.floating], phi0: float, fRef_in: float, m1_SI: float, m2_SI: float, chi1: float, chi2: float, distance: float) -> AmpPhaseFDWaveform:
     """SM: similar to IMRPhenomDGenerateFD, but generates h22 FD amplitude and phase on a given set of frequencies"""
-    m1 = m1_SI / imrc.MSUN_SI
-    m2 = m2_SI / imrc.MSUN_SI
+    m1: float = m1_SI / imrc.MSUN_SI
+    m2: float = m2_SI / imrc.MSUN_SI
 
-    f_min = freq[0]
-    f_max = freq[-1]
+    f_min: float = freq[0]
+    f_max: float = freq[-1]
 
     # check inputs for sanity
     # if np.all(freq==0.):
@@ -176,7 +177,7 @@ def IMRPhenomDGenerateh22FDAmpPhase(h22, freq, phi0, fRef_in, m1_SI, m2_SI, chi1
         raise ValueError(msg)
 
     if m1 > m2:
-        q = m1 / m2
+        q: float = m1 / m2
     else:
         q = m2 / m1
     assert q > 1.
@@ -191,8 +192,8 @@ def IMRPhenomDGenerateh22FDAmpPhase(h22, freq, phi0, fRef_in, m1_SI, m2_SI, chi1
     # if no reference frequency given, set it to the starting GW frequency
     # double fRef = (fRef_in == 0.0) ? f_min : fRef_in;
 
-    Mt_sec = (m1 + m2) * imrc.MTSUN_SI  # Conversion factor Hz -> dimensionless frequency
-    fCut = imrc.f_CUT / Mt_sec  # convert Mf -> Hz
+    Mt_sec: float = (m1 + m2) * imrc.MTSUN_SI  # Conversion factor Hz -> dimensionless frequency
+    fCut: float = imrc.f_CUT / Mt_sec  # convert Mf -> Hz
     # Somewhat arbitrary end point for the waveform.
     # Chosen so that the end of the waveform is well after the ringdown.
     if fCut <= f_min:
