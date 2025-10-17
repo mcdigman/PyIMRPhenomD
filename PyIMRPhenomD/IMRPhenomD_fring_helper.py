@@ -392,7 +392,7 @@ def fring_interp(finspin: NDArray[np.floating]) -> NDArray[np.floating]: ...
 @njit()
 def fring_interp(finspin: float | NDArray[np.floating]) -> float | NDArray[np.floating]:
     """Cubic spline interpolation for fring with scalar finspin"""
-    return cubic_call(finspin, coeffs_fring, ext=4)
+    return cubic_call(finspin, coeffs_fring, 4)
     # return eval_cubic(gridS,coeffs_fring,finspin.reshape((finspin.size,1)))
 
 
@@ -403,7 +403,7 @@ def fdamp_interp(finspin: NDArray[np.floating]) -> NDArray[np.floating]: ...
 @njit()
 def fdamp_interp(finspin: float | NDArray[np.floating]) -> float | NDArray[np.floating]:
     """Cubic spline interpolation for fdamp with scalar finspin"""
-    return cubic_call(finspin, coeffs_fdamp, ext=4)
+    return cubic_call(finspin, coeffs_fdamp, 4)
 
 
 @njit()
