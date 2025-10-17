@@ -25,7 +25,7 @@ from PyIMRPhenomD.IMRPhenomD_deriv_internals import IMRPhenDAmpPhaseFI
 from PyIMRPhenomD.IMRPhenomD_internals import COMPLEX16FrequencySeries, FinalSpin0815, IMRPhenDAmplitude, IMRPhenDPhase, NextPow2
 
 
-def IMRPhenomDGenerateFD_internal(phi0, fRef_in, deltaF, m1_in, m2_in, chi1_in, chi2_in, f_min, f_max, distance):
+def IMRPhenomDGenerateFD_internal(phi0: float, fRef_in: float, deltaF: float, m1_in: float, m2_in: float, chi1_in: float, chi2_in: float, f_min: float, f_max: float, distance: float) -> COMPLEX16FrequencySeries:
     """The following private function generates IMRPhenomD frequency-domain waveforms
     given coefficients
     """
@@ -88,106 +88,6 @@ def IMRPhenomDGenerateFD_internal(phi0, fRef_in, deltaF, m1_in, m2_in, chi1_in, 
         amp = amps[i - ind_min]
         htilde.data[i] = amp * np.exp(-1j * phi)
     return htilde
-
-# This is an aligned-spin frequency domain model.
-# See Husa et al \cite Husa:2015iqa, and Khan et al \cite Khan:2015jqa
-# for details. Any studies that use this waveform model should include
-# a reference to both of these papers.
-#
-# @note The model was calibrated to mass-ratios [1:1,1:4,1:8,1:18].
-# * Along the mass-ratio 1:1 line it was calibrated to spins  [-0.95, +0.98].
-# * Along the mass-ratio 1:4 line it was calibrated to spins  [-0.75, +0.75].
-# * Along the mass-ratio 1:8 line it was calibrated to spins  [-0.85, +0.85].
-# * Along the mass-ratio 1:18 line it was calibrated to spins [-0.8, +0.4].
-# The calibration points will be given in forthcoming papers.
-#
-# @attention The model is usable outside this parameter range,
-# and in tests to date gives sensible physical results,
-# but conclusive statements on the physical fidelity of
-# the model for these parameters await comparisons against further
-# numerical-relativity simulations. For more information, see the review wiki
-# under https:#www.lsc-group.phys.uwm.edu/ligovirgo/cbcnote/WaveformsReview/IMRPhenomDCodeReview
-
-
-def IMRPhenomDGenerateFD(phi0, fRef_in, deltaF, m1_SI, m2_SI, chi1, chi2, f_min, f_max, distance):
-    """Driver routine to compute the spin-aligned, inspiral-merger-ringdown
-    phenomenological waveform IMRPhenomD in the frequency domain.
-
-    Reference:
-    - Waveform: Eq. 35 and 36 in arXiv:1508.07253
-    - Coefficients: Eq. 31 and Table V in arXiv:1508.07253
-
-    All input parameters should be in SI units. Angles should be in radians.
-    """
-    # external: SI; internal: solar masses
-    m1 = m1_SI / imrc.MSUN_SI
-    m2 = m2_SI / imrc.MSUN_SI
-
-# check inputs for sanity
-    if fRef_in < 0.:
-        msg = f'fRef_in {fRef_in} must be positive (or 0 for "ignore")'
-        raise ValueError(msg)
-    if deltaF <= 0.:
-        msg = f'deltaF {deltaF} must be positive'
-        raise ValueError(msg)
-    if m1 <= 0.:
-        msg = f'm1 {m1} must be positive'
-        raise ValueError(msg)
-    if m2 <= 0.:
-        msg = f'm2 {m2} must be positive'
-        raise ValueError(msg)
-    if f_min <= 0.:
-        msg = f'f_min {f_min} must be positive'
-        raise ValueError(msg)
-    if f_max < 0.:
-        msg = f'f_max {f_max} must be positive'
-        raise ValueError(msg)
-    if distance <= 0.:
-        msg = f'distance {distance} must be positive'
-        raise ValueError(msg)
-    if m1 > m2:
-        q = m1 / m2
-    else:
-        q = m2 / m1
-
-    assert q > 1.
-
-    if not (-1. <= chi1 <= 1. and -1. <= chi2 <= 1.):
-        msg = f'Spins chi1={chi1} chi2={chi2}outside the range [-1,1] are not supported'
-        raise ValueError(msg)
-
-    # NOTE: we changed the prescription, now fRef defaults to fmaxCalc (fpeak in the paper)
-    # if no reference frequency given, set it to the starting GW frequency
-
-    Mt_sec = (m1 + m2) * imrc.MTSUN_SI  # Conversion factor Hz -> dimensionless frequency
-    fCut = imrc.f_CUT / Mt_sec  # convert Mf -> Hz
-    # Somewhat arbitrary end point for the waveform.
-    # Chosen so that the end of the waveform is well after the ringdown.
-    if fCut <= f_min:
-        print('(fCut = %g Hz) <= f_min = %g' % (fCut, f_min))
-
-    # default f_max to Cut
-    f_max_prime = f_max
-    if f_max:
-        f_max_prime = f_max
-    else:
-        f_max_prime = fCut
-
-    if f_max_prime > fCut:
-        f_max_prime = fCut
-
-    htilde = IMRPhenomDGenerateFD_internal(phi0, fRef_in, deltaF, m1, m2, chi1, chi2, f_min, f_max_prime, distance)
-
-    if f_max_prime < f_max:
-        # The user has requested a higher f_max than Mf=fCut.
-        # Resize the frequency series to fill with zeros beyond the cutoff frequency.
-        n = htilde.length
-        n_full = NextPow2(f_max / deltaF) + 1  # we actually want to have the length be a power of 2 + 1
-        print('Failed to resize waveform COMPLEX16FrequencySeries of length %5d (for internal fCut=%f) to new length %5d (for user-requested f_max=%f).' % (n, fCut, n_full, f_max))
-
-########################
-# END OF REVIEWED CODE ############
-########################
 
 
 def IMRPhenomDGenerateh22FDAmpPhase_internal(h22, freq, phi0, fRef_in, m1_in, m2_in, chi1_in, chi2_in, distance):
