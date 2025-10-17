@@ -1,0 +1,22 @@
+[project]
+name = "PyIMRPhenomD"
+version = "0.0.2"
+description = "Tool for getting numba compilable pure python IMRPhenomD"
+readme = "README.md"
+authors = [
+  { name="Matthew C. Digman", email="matthew.digman@vanderbilt.edu" }
+]
+license = { file = "LICENSE" }
+dependencies = [
+    "numpy",
+    "numba",
+    "pyakima",
+]
+requires-python = ">=3.7"
+
+[tool.setuptools.packages.find]
+include = ["PyIMRPhenomD*"]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
