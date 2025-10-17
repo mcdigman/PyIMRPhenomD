@@ -248,11 +248,11 @@ def AmpInsPrefactors(eta: float, chis: float, chia: float, rhos: tuple[float, fl
     return (two_thirds, one, four_thirds, five_thirds, two, seven_thirds, eight_thirds, three)
 
 
-@njit()
 @overload
 def AmpInsAnsatz(Mfs: float, eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> float: ...
 @overload
 def AmpInsAnsatz(Mfs: NDArray[np.floating], eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> NDArray[np.floating]: ...
+@njit()
 def AmpInsAnsatz(Mfs: float | NDArray[np.floating], eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> float | NDArray[np.floating]:
     """The Newtonian term in LAL is fine and we should use exactly the same (either hardcoded or call).
     We just use the Mathematica expression for convenience.
@@ -333,11 +333,11 @@ def gamma_funs(eta: float, chi: float) -> tuple[float, float, float]:
     return (gamma1, gamma2, gamma3)
 
 
-@njit()
 @overload
 def AmpMRDAnsatz(Mfs: float, fRD: float, fDM: float, eta: float, chi: float, amp_mult: float = 1.) -> float: ...
 @overload
 def AmpMRDAnsatz(Mfs: NDArray[np.floating], fRD: float, fDM: float, eta: float, chi: float, amp_mult: float = 1.) -> NDArray[np.floating]: ...
+@njit()
 def AmpMRDAnsatz(Mfs: float | NDArray[np.floating], fRD: float, fDM: float, eta: float, chi: float, amp_mult: float = 1.) -> float | NDArray[np.floating]:
     """Ansatz for the merger-ringdown amplitude. Equation 19 arXiv:1508.07253"""
     gammas = gamma_funs(eta, chi)
@@ -351,11 +351,11 @@ def AmpMRDAnsatz(Mfs: float | NDArray[np.floating], fRD: float, fDM: float, eta:
     return Amps
 
 
-@njit()
 @overload
 def DAmpMRDAnsatz(f: float, fRD: float, fDM: float, eta: float, chi: float, amp_mult: float = 1.) -> float: ...
 @overload
 def DAmpMRDAnsatz(f: NDArray[np.floating], fRD: float, fDM: float, eta: float, chi: float, amp_mult: float = 1.) -> NDArray[np.floating]: ...
+@njit()
 def DAmpMRDAnsatz(f: float | NDArray[np.floating], fRD: float, fDM: float, eta: float, chi: float, amp_mult: float = 1.) -> float | NDArray[np.floating]:
     """First frequency derivative of AmpMRDAnsatz*f(7/6)"""
     gammas = gamma_funs(eta, chi)
@@ -488,11 +488,11 @@ def ComputeDeltasFromCollocation(eta: float, chis: float, chia: float, chi: floa
 # #AmpIntAnsatzFunc[]
 
 
-@njit()
 @overload
 def AmpIntAnsatz(Mfs: float, fRD: float, fDM: float, eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> float: ...
 @overload
 def AmpIntAnsatz(Mfs: NDArray[np.floating], fRD: float, fDM: float, eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> NDArray[np.floating]: ...
+@njit()
 def AmpIntAnsatz(Mfs: float | NDArray[np.floating], fRD: float, fDM: float, eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> float | NDArray[np.floating]:
     """Ansatz for the intermediate amplitude. Equation 21 arXiv:1508.07253"""
     deltas = ComputeDeltasFromCollocation(eta, chis, chia, chi, fRD, fDM)
@@ -583,11 +583,11 @@ def alphaFits(eta: float, chi: float) -> tuple[float, float, float, float, float
     return (alpha1, alpha2, alpha3, alpha4, alpha5)
 
 
-@njit()
 @overload
 def PhiMRDAnsatzInt(Mf: float, fRD: float, fDM: float, eta: float, chi: float) -> float: ...
 @overload
 def PhiMRDAnsatzInt(Mf: NDArray[np.floating], fRD: float, fDM: float, eta: float, chi: float) -> float | NDArray[np.floating]: ...
+@njit()
 def PhiMRDAnsatzInt(Mf: float | NDArray[np.floating], fRD: float, fDM: float, eta: float, chi: float) -> float | NDArray[np.floating]:
     """Ansatz for the merger-ringdown phase Equation 14 arXiv:1508.07253"""
     alphas = alphaFits(eta, chi)
@@ -596,11 +596,11 @@ def PhiMRDAnsatzInt(Mf: float | NDArray[np.floating], fRD: float, fDM: float, et
     # return  alphas[0]/eta*Mf-alphas[1]/eta/Mf+ 4/3/eta*alphas[2]*Mf**(3/4)+alphas[3]/eta*np.arctan((Mf-alphas[4]*fRD)/fDM)
 
 
-@njit()
 @overload
 def DPhiMRD(Mf: float, fRD: float, fDM: float, eta: float, chi: float) -> float: ...
 @overload
 def DPhiMRD(Mf: NDArray[np.floating], fRD: float, fDM: float, eta: float, chi: float) -> NDArray[np.floating]: ...
+@njit
 def DPhiMRD(Mf: float | NDArray[np.floating], fRD: float, fDM: float, eta: float, chi: float) -> float | NDArray[np.floating]:
     """First frequency derivative of PhiMRDAnsatzInt"""
     alphas = alphaFits(eta, chi)
@@ -643,11 +643,11 @@ def betaFits(eta: float, chi: float) -> tuple[float, float, float]:
     return (beta1, beta2, beta3)
 
 
-@njit()
 @overload
 def PhiIntAnsatz(Mf: float, eta: float, chi: float) -> float: ...
 @overload
 def PhiIntAnsatz(Mf: NDArray[np.floating], eta: float, chi: float) -> NDArray[np.floating]: ...
+@njit()
 def PhiIntAnsatz(Mf: float | NDArray[np.floating], eta: float, chi: float) -> float | NDArray[np.floating]:
     """Ansatz for the intermediate phase defined by Equation 16 arXiv:1508.07253"""
     #   ComputeIMRPhenDPhaseConnectionCoefficients
@@ -656,11 +656,11 @@ def PhiIntAnsatz(Mf: float | NDArray[np.floating], eta: float, chi: float) -> fl
     return betas[0] / eta * Mf - betas[2] / eta / 3 / Mf**3 + betas[1] / eta * np.log(Mf)
 
 
-@njit()
 @overload
 def DPhiIntAnsatz(Mf: float, eta: float, chi: float) -> float: ...
 @overload
 def DPhiIntAnsatz(Mf: NDArray[np.floating], eta: float, chi: float) -> NDArray[np.floating]: ...
+@njit()
 def DPhiIntAnsatz(Mf: float | NDArray[np.floating], eta: float, chi: float) -> float | NDArray[np.floating]:
     """First frequency derivative of PhiIntAnsatz
     (this time with 1./eta explicitly factored in)
@@ -669,11 +669,11 @@ def DPhiIntAnsatz(Mf: float | NDArray[np.floating], eta: float, chi: float) -> f
     return betas[0] / eta + betas[2] / eta / Mf**4 + betas[1] / eta / Mf
 
 
-@njit()
 @overload
 def DDPhiIntAnsatz(Mf: float, eta: float, chi: float) -> float: ...
 @overload
 def DDPhiIntAnsatz(Mf: NDArray[np.floating], eta: float, chi: float) -> NDArray[np.floating]: ...
+@njit()
 def DDPhiIntAnsatz(Mf: float | NDArray[np.floating], eta: float, chi: float) -> float | NDArray[np.floating]:
     """First frequency derivative of PhiIntAnsatz
     (this time with 1./eta explicitly factored in)
@@ -737,11 +737,11 @@ def PhiInsPrefactors(eta: float, chis: float, chia: float, chi: float) -> tuple[
     return prefactors_ini, prefactors_log
 
 
-@njit()
 @overload
 def PhiInsAnsatzInt(Mfs: float, eta: float, chis: float, chia: float, chi: float) -> float: ...
 @overload
 def PhiInsAnsatzInt(Mfs: NDArray[np.floating], eta: float, chis: float, chia: float, chi: float) -> NDArray[np.floating]: ...
+@njit()
 def PhiInsAnsatzInt(Mfs: float | NDArray[np.floating], eta: float, chis: float, chia: float, chi: float) -> float | NDArray[np.floating]:
     """Ansatz for the inspiral phase.
     We call the LAL TF2 coefficients here.
@@ -769,11 +769,11 @@ def PhiInsAnsatzInt(Mfs: float | NDArray[np.floating], eta: float, chis: float, 
     return Phi
 
 
-@njit()
 @overload
 def DPhiInsAnsatzInt(Mfs: float, eta: float, chis: float, chia: float, chi: float) -> float: ...
 @overload
 def DPhiInsAnsatzInt(Mfs: NDArray[np.floating], eta: float, chis: float, chia: float, chi: float) -> NDArray[np.floating]: ...
+@njit()
 def DPhiInsAnsatzInt(Mfs: float | NDArray[np.floating], eta: float, chis: float, chia: float, chi: float) -> float | NDArray[np.floating]:
     """First frequency derivative of PhiInsAnsatzInt"""
     # Assemble PN phasing series
@@ -797,11 +797,11 @@ def DPhiInsAnsatzInt(Mfs: float | NDArray[np.floating], eta: float, chis: float,
     return dPhi
 
 
-@njit()
 @overload
 def DDPhiInsAnsatzInt(Mfs: float, eta: float, chis: float, chia: float, chi: float) -> float: ...
 @overload
 def DDPhiInsAnsatzInt(Mfs: NDArray[np.floating], eta: float, chis: float, chia: float, chi: float) -> NDArray[np.floating]: ...
+@njit()
 def DDPhiInsAnsatzInt(Mfs: float | NDArray[np.floating], eta: float, chis: float, chia: float, chi: float) -> float | NDArray[np.floating]:
     """First frequency derivative of PhiInsAnsatzInt"""
     # Assemble PN phasing series
