@@ -54,7 +54,7 @@ def IMRPhenomDGenerateFD_internal(phi0: float, fRef_in: float, deltaF: float, m1
     Mt_sec: float = Mt * imrc.MTSUN_SI
 
     # Compute the amplitude pre-factor
-    amp0: float = 2 * np.sqrt(5. / (64. * np.pi)) * Mt**2 * imrc.MRSUN_SI * imrc.MTSUN_SI / distance
+    amp0: float = float(2 * np.sqrt(5. / (64. * np.pi)) * Mt**2 * imrc.MRSUN_SI * imrc.MTSUN_SI / distance)
 
     # Coalesce at t=0
     # shift by overall length in time

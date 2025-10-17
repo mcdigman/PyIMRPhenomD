@@ -76,7 +76,7 @@ def PNPhasingSeriesTaylorF2(eta: float, chis: float, chia: float) -> tuple[tuple
     chi2, Component of dimensionless spin 2 along Lhat
     """
     if eta < 0.25:
-        delta: float = np.sqrt(1 - 4 * eta)
+        delta: float = float(np.sqrt(1 - 4 * eta))
     else:
         delta = 0.
 
@@ -144,7 +144,7 @@ def chiPN(eta: float, chis: float, chia: float) -> float:
     Convention m1 >= m2 and chi1 is the spin on m1
     """
     if eta < 0.25:
-        delta = np.sqrt(1 - 4 * eta)
+        delta: float = float(np.sqrt(1 - 4 * eta))
     else:
         delta = 0.
     return chis * (1 - 76 / 113 * eta) + delta * chia
@@ -160,7 +160,7 @@ def FinalSpin0815(eta: float, chis: float, chia: float) -> float:
     """
 #   Convention m1 >= m2
     if eta < 0.25:
-        Seta = np.sqrt(1 - 4 * eta)
+        Seta: float = float(np.sqrt(1 - 4 * eta))
     else:
         Seta = 0.
 #    m1 = (1+Seta)/2
@@ -200,16 +200,16 @@ def rho_funs(eta: float, chi: float) -> tuple[float, float, float]:
     AmpInsDFFitCoeffChiPNFunc[eta, chiPN]
     See corresponding row in Table 5 arXiv:1508.07253
     """
-    xi = -1 + chi
-    rho1 = 3931.8979897196696 - 17395.758706812805 * eta \
+    xi: float = -1.0 + chi
+    rho1: float = 3931.8979897196696 - 17395.758706812805 * eta \
         + (3132.375545898835 + 343965.86092361377 * eta - 1.2162565819981997e6 * eta**2) * xi \
         + (-70698.00600428853 + 1.383907177859705e6 * eta - 3.9662761890979446e6 * eta**2) * xi**2 \
         + (-60017.52423652596 + 803515.1181825735 * eta - 2.091710365941658e6 * eta**2) * xi**3
-    rho2 = -40105.47653771657 + 112253.0169706701 * eta \
+    rho2: float = -40105.47653771657 + 112253.0169706701 * eta \
         + (23561.696065836168 - 3.476180699403351e6 * eta + 1.137593670849482e7 * eta**2) * xi \
         + (754313.1127166454 - 1.308476044625268e7 * eta + 3.6444584853928134e7 * eta**2) * xi**2 \
         + (596226.612472288 - 7.4277901143564405e6 * eta + 1.8928977514040343e7 * eta**2) * xi**3
-    rho3 = 83208.35471266537 - 191237.7264145924 * eta \
+    rho3: float = 83208.35471266537 - 191237.7264145924 * eta \
         + (-210916.2454782992 + 8.71797508352568e6 * eta - 2.6914942420669552e7 * eta**2) * xi \
         + (-1.9889806527362722e6 + 3.0888029960154563e7 * eta - 8.390870279256162e7 * eta**2) * xi**2 \
         + (-1.4535031953446497e6 + 1.7063528990822166e7 * eta - 4.2748659731120914e7 * eta**2) * xi**3
@@ -218,33 +218,33 @@ def rho_funs(eta: float, chi: float) -> tuple[float, float, float]:
 
 @njit()
 def AmpInsPrefactors(eta: float, chis: float, chia: float, rhos: tuple[float, float, float]) -> tuple[float, float, float, float, float, float, float, float]:
-    chi1 = chis + chia
-    chi2 = chis - chia
-    rho1 = rhos[0]
-    rho2 = rhos[1]
-    rho3 = rhos[2]
+    chi1: float = chis + chia
+    chi2: float = chis - chia
+    rho1: float = rhos[0]
+    rho2: float = rhos[1]
+    rho3: float = rhos[2]
     if eta < 0.25:
-        Seta = np.sqrt(1 - 4 * eta)
+        Seta: float = float(np.sqrt(1 - 4 * eta))
     else:
         Seta = 0.
 
-    two_thirds = ((-969 + 1804 * eta) * np.pi**(2 / 3)) / 672
-    one = ((chi1 * (81 * (1 + Seta) - 44 * eta) + chi2 * (81 - 81 * Seta - 44 * eta)) * np.pi) / 48
-    four_thirds = ((-27312085 - 10287648 * chi2**2 - 10287648 * chi1**2 * (1 + Seta) + 10287648 * chi2**2 * Seta
+    two_thirds: float = ((-969 + 1804 * eta) * np.pi**(2 / 3)) / 672
+    one: float = ((chi1 * (81 * (1 + Seta) - 44 * eta) + chi2 * (81 - 81 * Seta - 44 * eta)) * np.pi) / 48
+    four_thirds: float = ((-27312085 - 10287648 * chi2**2 - 10287648 * chi1**2 * (1 + Seta) + 10287648 * chi2**2 * Seta
                     + 24 * (-1975055 + 857304 * chi1**2 - 994896 * chi1 * chi2 + 857304 * chi2**2) * eta + 35371056 * eta**2)
                     * np.pi**(4 / 3)) / 8128512
-    five_thirds = (np.pi**(5 / 3) * (chi2 * (-285197 * (-1 + Seta) + 4 * (-91902 + 1579 * Seta) * eta - 35632 * eta**2)
+    five_thirds: float = (np.pi**(5 / 3) * (chi2 * (-285197 * (-1 + Seta) + 4 * (-91902 + 1579 * Seta) * eta - 35632 * eta**2)
                     + chi1 * (285197 * (1 + Seta) - 4 * (91902 + 1579 * Seta) * eta - 35632 * eta**2)
                     + 42840 * (-1 + 4 * eta) * np.pi)) / 32256
-    two = - (np.pi**2 * (-336 * (-3248849057 + 2943675504 * chi1**2 - 3339284256 * chi1 * chi2 + 2943675504 * chi2**2) * eta**2
+    two: float = - (np.pi**2 * (-336 * (-3248849057 + 2943675504 * chi1**2 - 3339284256 * chi1 * chi2 + 2943675504 * chi2**2) * eta**2
                     - 324322727232 * eta**3 - 7 * (-177520268561 + 107414046432 * chi2**2 + 107414046432 * chi1**2 * (1 + Seta)
                     - 107414046432 * chi2**2 * Seta + 11087290368 * (chi1 + chi2 + chi1 * Seta - chi2 * Seta) * np.pi)
                     + 12 * eta * (-545384828789 - 176491177632 * chi1 * chi2 + 202603761360 * chi2**2
                     + 77616 * chi1**2 * (2610335 + 995766 * Seta) - 77287373856 * chi2**2 * Seta
                     + 5841690624 * (chi1 + chi2) * np.pi + 21384760320 * np.pi**2))) / 60085960704
-    seven_thirds = rho1
-    eight_thirds = rho2
-    three = rho3
+    seven_thirds: float = rho1
+    eight_thirds: float = rho2
+    three: float = rho3
     return (two_thirds, one, four_thirds, five_thirds, two, seven_thirds, eight_thirds, three)
 
 
@@ -262,8 +262,8 @@ def AmpInsAnsatz(Mfs: float | NDArray[np.floating], eta: float, chis: float, chi
     rhos = rho_funs(eta, chi)
     amp_prefactors = AmpInsPrefactors(eta, chis, chia, rhos)
 
-    fv = Mfs**(1 / 3)
-    Amps = amp_mult * 1 / np.sqrt(fv)**7 * (
+    fv: float | NDArray[np.floating] = Mfs**(1 / 3)
+    Amps: float | NDArray[np.floating] = amp_mult * 1 / np.sqrt(fv)**7 * (
               1
             + fv**2 * amp_prefactors[0]
             + fv**3 * amp_prefactors[1]
@@ -282,14 +282,14 @@ def DAmpInsAnsatz(Mf: float, eta: float, chis: float, chia: float, chi: float, a
     """Take the AmpInsAnsatz expression pull of the f^7/6 and compute the first derivative
     with respect to frequency to get the expression below.
     """
-    chi1 = chis + chia
-    chi2 = chis - chia
+    chi1: float = chis + chia
+    chi2: float = chis - chia
     rhos = rho_funs(eta, chi)
-    rho1 = rhos[0]
-    rho2 = rhos[1]
-    rho3 = rhos[2]
+    rho1: float = rhos[0]
+    rho2: float = rhos[1]
+    rho3: float = rhos[2]
     if eta < 0.25:
-        Seta = np.sqrt(1 - 4 * eta)
+        Seta: float = float(np.sqrt(1 - 4 * eta))
     else:
         Seta = 0.
 
@@ -317,16 +317,16 @@ def gamma_funs(eta: float, chi: float) -> tuple[float, float, float]:
     AmpMRDAnsatzFunc[]
     See corresponding row in Table 5 arXiv:1508.07253
     """
-    xi = -1 + chi
-    gamma1 = 0.006927402739328343 + 0.03020474290328911 * eta \
+    xi: float = -1.0 + chi
+    gamma1: float = 0.006927402739328343 + 0.03020474290328911 * eta \
             + (0.006308024337706171 - 0.12074130661131138 * eta + 0.26271598905781324 * eta**2) * xi \
             + (0.0034151773647198794 - 0.10779338611188374 * eta + 0.27098966966891747 * eta**2) * xi**2 \
             + (0.0007374185938559283 - 0.02749621038376281 * eta + 0.0733150789135702 * eta**2) * xi**3
-    gamma2 = 1.010344404799477 + 0.0008993122007234548 * eta \
+    gamma2: float = 1.010344404799477 + 0.0008993122007234548 * eta \
             + (0.283949116804459 - 4.049752962958005 * eta + 13.207828172665366 * eta**2) * xi \
             + (0.10396278486805426 - 7.025059158961947 * eta + 24.784892370130475 * eta**2) * xi**2 \
             + (0.03093202475605892 - 2.6924023896851663 * eta + 9.609374464684983 * eta**2) * xi**3
-    gamma3 = 1.3081615607036106 - 0.005537729694807678 * eta \
+    gamma3: float = 1.3081615607036106 - 0.005537729694807678 * eta \
             + (-0.06782917938621007 - 0.6689834970767117 * eta + 3.403147966134083 * eta**2) * xi \
             + (-0.05296577374411866 - 0.9923793203111362 * eta + 4.820681208409587 * eta**2) * xi**2 \
             + (-0.006134139870393713 - 0.38429253308696365 * eta + 1.7561754421985984 * eta**2) * xi**3
@@ -405,28 +405,28 @@ def ComputeDeltasFromCollocation(eta: float, chis: float, chia: float, chi: floa
     Method described in arXiv:1508.07253 section 'Region IIa - intermediate'
     """
     # Three evenly spaced collocation points in the interval [f1,f3].
-    f1 = imrc.AMP_fJoin_INS
-    f3 = fmaxCalc(MfRD, MfDM, eta, chi)
-    dfx = (f3 - f1) / 2
-    f2 = f1 + dfx
+    f1: float = imrc.AMP_fJoin_INS
+    f3: float = fmaxCalc(MfRD, MfDM, eta, chi)
+    dfx: float = (f3 - f1) / 2
+    f2: float = f1 + dfx
 
     # amp_prefactors = AmpInsPrefactors(eta,chis,chia,rhos)
 
     #  # v1 is inspiral model evaluated at f1
     #  # d1 is derivative of inspiral model evaluated at f1
     # v1 = AmpInsAnsatz(np.zeros(1),np.array([f1]),eta,chis,chia,chi,0,1,1.)[0]*f1**(7/6)
-    v1 = AmpInsAnsatz(f1, eta, chis, chia, chi, 1.) * f1**(7 / 6)
+    v1: float = AmpInsAnsatz(f1, eta, chis, chia, chi, 1.) * f1**(7 / 6)
 
-    d1 = DAmpInsAnsatz(f1, eta, chis, chia, chi, 1.)
+    d1: float = DAmpInsAnsatz(f1, eta, chis, chia, chi, 1.)
 
     #  # v3 is merger-ringdown model evaluated at f3
     #  # d2 is derivative of merger-ringdown model evaluated at f3
-    v3 = AmpMRDAnsatz(f3, MfRD, MfDM, eta, chi, 1.) * f3**(7 / 6)
-    d2 = DAmpMRDAnsatz(f3, MfRD, MfDM, eta, chi, 1.)
+    v3: float = AmpMRDAnsatz(f3, MfRD, MfDM, eta, chi, 1.) * f3**(7 / 6)
+    d2: float = DAmpMRDAnsatz(f3, MfRD, MfDM, eta, chi, 1.)
 
     #  # v2 is the value of the amplitude evaluated at f2
     #  # they come from the fit of the collocation points in the intermediate region
-    v2 = AmpIntColFitCoeff(eta, chi)
+    v2: float = AmpIntColFitCoeff(eta, chi)
 
     #  # Now compute the delta_i's from the collocation coefficients
     # The following functions (delta{0,1,2,3,4}_fun) were derived
@@ -436,7 +436,7 @@ def ComputeDeltasFromCollocation(eta: float, chis: float, chia: float, chi: floa
     # These are not given in the paper.
     # Can be rederived by solving Equation 21 for the constraints
     # given in Equations 22-26 in arXiv:1508.07253
-    delta0 = -((d2 * f1**5 * f2**2 * f3 - 2 * d2 * f1**4 * f2**3 * f3 + d2 * f1**3 * f2**4 * f3 - d2 * f1**5 * f2 * f3**2 + d2 * f1**4 * f2**2 * f3**2
+    delta0: float = -((d2 * f1**5 * f2**2 * f3 - 2 * d2 * f1**4 * f2**3 * f3 + d2 * f1**3 * f2**4 * f3 - d2 * f1**5 * f2 * f3**2 + d2 * f1**4 * f2**2 * f3**2
         - d1 * f1**3 * f2**3 * f3**2 + d2 * f1**3 * f2**3 * f3**2 + d1 * f1**2 * f2**4 * f3**2 - d2 * f1**2 * f2**4 * f3**2 + d2 * f1**4 * f2 * f3**3
         + 2 * d1 * f1**3 * f2**2 * f3**3 - 2 * d2 * f1**3 * f2**2 * f3**3 - d1 * f1**2 * f2**3 * f3**3 + d2 * f1**2 * f2**3 * f3**3 - d1 * f1 * f2**4 * f3**3
         - d1 * f1**3 * f2 * f3**4 - d1 * f1**2 * f2**2 * f3**4 + 2 * d1 * f1 * f2**3 * f3**4 + d1 * f1**2 * f2 * f3**5 - d1 * f1 * f2**2 * f3**5
@@ -445,7 +445,7 @@ def ComputeDeltasFromCollocation(eta: float, chis: float, chia: float, chi: floa
         + 3 * f1**4 * f3**3 * v2 - 3 * f1**3 * f3**4 * v2 + f1**2 * f3**5 * v2 - f1**5 * f2**2 * v3 + 2 * f1**4 * f2**3 * v3 - f1**3 * f2**4 * v3
         + 2 * f1**5 * f2 * f3 * v3 - f1**4 * f2**2 * f3 * v3 - 4 * f1**3 * f2**3 * f3 * v3 + 3 * f1**2 * f2**4 * f3 * v3 - 4 * f1**4 * f2 * f3**2 * v3
         + 8 * f1**3 * f2**2 * f3**2 * v3 - 4 * f1**2 * f2**3 * f3**2 * v3) / ((f1 - f2)**2 * (f1 - f3)**3 * (f3 - f2)**2))
-    delta1 = -((-(d2 * f1**5 * f2**2) + 2 * d2 * f1**4 * f2**3 - d2 * f1**3 * f2**4 - d2 * f1**4 * f2**2 * f3 + 2 * d1 * f1**3 * f2**3 * f3
+    delta1: float = -((-(d2 * f1**5 * f2**2) + 2 * d2 * f1**4 * f2**3 - d2 * f1**3 * f2**4 - d2 * f1**4 * f2**2 * f3 + 2 * d1 * f1**3 * f2**3 * f3
         + 2 * d2 * f1**3 * f2**3 * f3 - 2 * d1 * f1**2 * f2**4 * f3 - d2 * f1**2 * f2**4 * f3 + d2 * f1**5 * f3**2 - 3 * d1 * f1**3 * f2**2 * f3**2
         - d2 * f1**3 * f2**2 * f3**2 + 2 * d1 * f1**2 * f2**3 * f3**2 - 2 * d2 * f1**2 * f2**3 * f3**2 + d1 * f1 * f2**4 * f3**2 + 2 * d2 * f1 * f2**4 * f3**2
         - d2 * f1**4 * f3**3 + d1 * f1**2 * f2**2 * f3**3 + 3 * d2 * f1**2 * f2**2 * f3**3 - 2 * d1 * f1 * f2**3 * f3**3 - 2 * d2 * f1 * f2**3 * f3**3
@@ -454,7 +454,7 @@ def ComputeDeltasFromCollocation(eta: float, chis: float, chia: float, chi: floa
         + 2 * f1 * f3**5 * v1 + 2 * f1**5 * f3 * v2 - 4 * f1**4 * f3**2 * v2 + 4 * f1**2 * f3**4 * v2 - 2 * f1 * f3**5 * v2 - 2 * f1**5 * f3 * v3
         + 8 * f1**2 * f2**3 * f3 * v3 - 6 * f1 * f2**4 * f3 * v3 + 4 * f1**4 * f3**2 * v3 - 12 * f1**2 * f2**2 * f3**2 * v3 + 8 * f1 * f2**3 * f3**2 * v3)
         / ((f1 - f2)**2 * (f1 - f3)**3 * (-f2 + f3)**2))
-    delta2 = -((d2 * f1**5 * f2 - d1 * f1**3 * f2**3 - 3 * d2 * f1**3 * f2**3 + d1 * f1**2 * f2**4 + 2 * d2 * f1**2 * f2**4 - d2 * f1**5 * f3
+    delta2: float = -((d2 * f1**5 * f2 - d1 * f1**3 * f2**3 - 3 * d2 * f1**3 * f2**3 + d1 * f1**2 * f2**4 + 2 * d2 * f1**2 * f2**4 - d2 * f1**5 * f3
         + d2 * f1**4 * f2 * f3 - d1 * f1**2 * f2**3 * f3 + d2 * f1**2 * f2**3 * f3 + d1 * f1 * f2**4 * f3 - d2 * f1 * f2**4 * f3 - d2 * f1**4 * f3**2
         + 3 * d1 * f1**3 * f2 * f3**2 + d2 * f1**3 * f2 * f3**2 - d1 * f1 * f2**3 * f3**2 + d2 * f1 * f2**3 * f3**2 - 2 * d1 * f2**4 * f3**2 - d2 * f2**4 * f3**2
         - 2 * d1 * f1**3 * f3**3 + 2 * d2 * f1**3 * f3**3 - d1 * f1**2 * f2 * f3**3 - 3 * d2 * f1**2 * f2 * f3**3 + 3 * d1 * f2**3 * f3**3 + d2 * f2**3 * f3**3
@@ -463,7 +463,7 @@ def ComputeDeltasFromCollocation(eta: float, chis: float, chia: float, chi: floa
         - f1**4 * f3 * v2 + 8 * f1**3 * f3**2 * v2 - 8 * f1**2 * f3**3 * v2 + f1 * f3**4 * v2 + f3**5 * v2 + f1**5 * v3 - 4 * f1**2 * f2**3 * v3 + 3 * f1 * f2**4 * v3
         + f1**4 * f3 * v3 - 4 * f1 * f2**3 * f3 * v3 + 3 * f2**4 * f3 * v3 - 8 * f1**3 * f3**2 * v3 + 12 * f1**2 * f2 * f3**2 * v3 - 4 * f2**3 * f3**2 * v3)
         / ((f1 - f2)**2 * (f1 - f3)**3 * (-f2 + f3)**2))
-    delta3 = -((-2 * d2 * f1**4 * f2 + d1 * f1**3 * f2**2 + 3 * d2 * f1**3 * f2**2 - d1 * f1 * f2**4 - d2 * f1 * f2**4 + 2 * d2 * f1**4 * f3
+    delta3: float = -((-2 * d2 * f1**4 * f2 + d1 * f1**3 * f2**2 + 3 * d2 * f1**3 * f2**2 - d1 * f1 * f2**4 - d2 * f1 * f2**4 + 2 * d2 * f1**4 * f3
         - 2 * d1 * f1**3 * f2 * f3 - 2 * d2 * f1**3 * f2 * f3 + d1 * f1**2 * f2**2 * f3 - d2 * f1**2 * f2**2 * f3 + d1 * f2**4 * f3 + d2 * f2**4 * f3
         + d1 * f1**3 * f3**2 - d2 * f1**3 * f3**2 - 2 * d1 * f1**2 * f2 * f3**2 + 2 * d2 * f1**2 * f2 * f3**2 + d1 * f1 * f2**2 * f3**2 - d2 * f1 * f2**2 * f3**2
         + d1 * f1**2 * f3**3 - d2 * f1**2 * f3**3 + 2 * d1 * f1 * f2 * f3**3 + 2 * d2 * f1 * f2 * f3**3 - 3 * d1 * f2**2 * f3**3 - d2 * f2**2 * f3**3
@@ -472,7 +472,7 @@ def ComputeDeltasFromCollocation(eta: float, chis: float, chia: float, chi: floa
         - 4 * f1**3 * f3 * v2 + 4 * f1 * f3**3 * v2 - 2 * f3**4 * v2 - 2 * f1**4 * v3 + 4 * f1**2 * f2**2 * v3 - 2 * f2**4 * v3 + 4 * f1**3 * f3 * v3
         - 8 * f1**2 * f2 * f3 * v3 + 4 * f1 * f2**2 * f3 * v3 + 4 * f1**2 * f3**2 * v3 - 8 * f1 * f2 * f3**2 * v3 + 4 * f2**2 * f3**2 * v3)
         / ((f1 - f2)**2 * (f1 - f3)**3 * (-f2 + f3)**2))
-    delta4 = -((d2 * f1**3 * f2 - d1 * f1**2 * f2**2 - 2 * d2 * f1**2 * f2**2 + d1 * f1 * f2**3 + d2 * f1 * f2**3 - d2 * f1**3 * f3 + 2 * d1 * f1**2 * f2 * f3
+    delta4: float = -((d2 * f1**3 * f2 - d1 * f1**2 * f2**2 - 2 * d2 * f1**2 * f2**2 + d1 * f1 * f2**3 + d2 * f1 * f2**3 - d2 * f1**3 * f3 + 2 * d1 * f1**2 * f2 * f3
         + d2 * f1**2 * f2 * f3 - d1 * f1 * f2**2 * f3 + d2 * f1 * f2**2 * f3 - d1 * f2**3 * f3 - d2 * f2**3 * f3 - d1 * f1**2 * f3**2 + d2 * f1**2 * f3**2
         - d1 * f1 * f2 * f3**2 - 2 * d2 * f1 * f2 * f3**2 + 2 * d1 * f2**2 * f3**2 + d2 * f2**2 * f3**2 + d1 * f1 * f3**3 - d1 * f2 * f3**3 + 3 * f1 * f2**2 * v1
         - 2 * f2**3 * v1 - 6 * f1 * f2 * f3 * v1 + 3 * f2**2 * f3 * v1 + 3 * f1 * f3**2 * v1 - f3**3 * v1 - f1**3 * v2 + 3 * f1**2 * f3 * v2 - 3 * f1 * f3**2 * v2
@@ -481,7 +481,7 @@ def ComputeDeltasFromCollocation(eta: float, chis: float, chia: float, chi: floa
 
     return (delta0, delta1, delta2, delta3, delta4)
 
-# / Amplitude: Intermediate functions ############
+# Amplitude: Intermediate functions ############
 #
 # Phenom coefficients delta0, ..., delta4 determined from collocation method
 # (constraining 3 values and 2 derivatives)
@@ -489,7 +489,11 @@ def ComputeDeltasFromCollocation(eta: float, chis: float, chia: float, chi: floa
 
 
 @njit()
-def AmpIntAnsatz(Mfs: NDArray[np.floating], fRD: float, fDM: float, eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> NDArray[np.floating]:
+@overload
+def AmpIntAnsatz(Mfs: float, fRD: float, fDM: float, eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> float: ...
+@overload
+def AmpIntAnsatz(Mfs: NDArray[np.floating], fRD: float, fDM: float, eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> NDArray[np.floating]: ...
+def AmpIntAnsatz(Mfs: float | NDArray[np.floating], fRD: float, fDM: float, eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> float | NDArray[np.floating]:
     """Ansatz for the intermediate amplitude. Equation 21 arXiv:1508.07253"""
     deltas = ComputeDeltasFromCollocation(eta, chis, chia, chi, fRD, fDM)
     # for itrf in range(NF_low,NF):
@@ -508,24 +512,24 @@ def IMRPhenDAmplitude(Mfs: NDArray[np.floating], eta: float, chis: float, chia: 
     The inspiral, intermediate and merger-ringdown amplitude parts
     """
     #  # Transition frequencies
-    chi = chiPN(eta, chis, chia)
+    chi: float = chiPN(eta, chis, chia)
 
-    finspin = FinalSpin0815(eta, chis, chia)  # FinalSpin0815 - 0815 is like a version number
+    finspin: float = FinalSpin0815(eta, chis, chia)  # FinalSpin0815 - 0815 is like a version number
 
     fRD, fDM = fringdown(eta, chis, chia, finspin)
 
-    fMRDJoinAmp = fmaxCalc(fRD, fDM, eta, chi)
+    fMRDJoinAmp: float = fmaxCalc(fRD, fDM, eta, chi)
 
     Amps = np.zeros(NF)
 
     if Mfs[-1] > imrc.f_CUT:
-        itrFCut = int(np.searchsorted(Mfs, imrc.f_CUT, side='right'))
+        itrFCut: int = int(np.searchsorted(Mfs, imrc.f_CUT, side='right'))
     else:
         itrFCut = NF
 
     if Mfs[itrFCut - 1] < imrc.AMP_fJoin_INS:
-        itrfMRDAmp = itrFCut
-        itrfInt = itrFCut
+        itrfMRDAmp: int = itrFCut
+        itrfInt: int = itrFCut
     elif Mfs[itrFCut - 1] < fMRDJoinAmp:
         itrfMRDAmp = itrFCut
         itrfInt = int(np.searchsorted(Mfs, imrc.AMP_fJoin_INS))
@@ -535,7 +539,7 @@ def IMRPhenDAmplitude(Mfs: NDArray[np.floating], eta: float, chis: float, chia: 
 
     #   split the calculation to just 1 of 3 possible mutually exclusive ranges
     # if itrfInt>0:
-    amp0 = amp_mult * amp0Func(eta)
+    amp0: float = amp_mult * amp0Func(eta)
     Amps[0:itrfInt] = AmpInsAnsatz(Mfs[0:itrfInt], eta, chis, chia, chi, amp_mult=amp0)  # Inspiral range
     # if itrfInt<itrfMRDAmp:
     Amps[itrfInt:itrfMRDAmp] = AmpIntAnsatz(Mfs[itrfInt:itrfMRDAmp], fRD, fDM, eta, chis, chia, chi, amp_mult=amp0)  # Intermediate range
@@ -555,24 +559,24 @@ def alphaFits(eta: float, chi: float) -> tuple[float, float, float, float, float
     PhiRingdownAnsatz is the ringdown phasing in terms of the alpha_i coefficients
     See corresponding row in Table 5 arXiv:1508.07253
     """
-    xi = -1 + chi
-    alpha1 = 43.31514709695348 + 638.6332679188081 * eta \
+    xi: float = -1.0 + chi
+    alpha1: float = 43.31514709695348 + 638.6332679188081 * eta \
             + (-32.85768747216059 + 2415.8938269370315 * eta - 5766.875169379177 * eta**2) * xi \
             + (-61.85459307173841 + 2953.967762459948 * eta - 8986.29057591497 * eta**2) * xi**2 \
             + (-21.571435779762044 + 981.2158224673428 * eta - 3239.5664895930286 * eta**2) * xi**3
-    alpha2 = -0.07020209449091723 - 0.16269798450687084 * eta \
+    alpha2: float = -0.07020209449091723 - 0.16269798450687084 * eta \
             + (-0.1872514685185499 + 1.138313650449945 * eta - 2.8334196304430046 * eta**2) * xi \
             + (-0.17137955686840617 + 1.7197549338119527 * eta - 4.539717148261272 * eta**2) * xi**2 \
             + (-0.049983437357548705 + 0.6062072055948309 * eta - 1.682769616644546 * eta**2) * xi**3
-    alpha3 = 9.5988072383479 - 397.05438595557433 * eta \
+    alpha3: float = 9.5988072383479 - 397.05438595557433 * eta \
             + (16.202126189517813 - 1574.8286986717037 * eta + 3600.3410843831093 * eta**2) * xi \
             + (27.092429659075467 - 1786.482357315139 * eta + 5152.919378666511 * eta**2) * xi**2 \
             + (11.175710130033895 - 577.7999423177481 * eta + 1808.730762932043 * eta**2) * xi**3
-    alpha4 = -0.02989487384493607 + 1.4022106448583738 * eta \
+    alpha4: float = -0.02989487384493607 + 1.4022106448583738 * eta \
             + (-0.07356049468633846 + 0.8337006542278661 * eta + 0.2240008282397391 * eta**2) * xi \
             + (-0.055202870001177226 + 0.5667186343606578 * eta + 0.7186931973380503 * eta**2) * xi**2 \
             + (-0.015507437354325743 + 0.15750322779277187 * eta + 0.21076815715176228 * eta**2) * xi**3
-    alpha5 = 0.9974408278363099 - 0.007884449714907203 * eta \
+    alpha5: float = 0.9974408278363099 - 0.007884449714907203 * eta \
             + (-0.059046901195591035 + 1.3958712396764088 * eta - 4.516631601676276 * eta**2) * xi \
             + (-0.05585343136869692 + 1.7516580039343603 * eta - 5.990208965347804 * eta**2) * xi**2 \
             + (-0.017945336522161195 + 0.5965097794825992 * eta - 2.0608879367971804 * eta**2) * xi**3
@@ -587,7 +591,7 @@ def PhiMRDAnsatzInt(Mf: NDArray[np.floating], fRD: float, fDM: float, eta: float
 def PhiMRDAnsatzInt(Mf: float | NDArray[np.floating], fRD: float, fDM: float, eta: float, chi: float) -> float | NDArray[np.floating]:
     """Ansatz for the merger-ringdown phase Equation 14 arXiv:1508.07253"""
     alphas = alphaFits(eta, chi)
-    fq = np.sqrt(np.sqrt(Mf))
+    fq: float | NDArray[np.floating] = np.sqrt(np.sqrt(Mf))
     return alphas[0] / eta * Mf - alphas[1] / eta / Mf + 4 / 3 / eta * alphas[2] * fq**3 + alphas[3] / eta * np.arctan((Mf - alphas[4] * fRD) / fDM)
     # return  alphas[0]/eta*Mf-alphas[1]/eta/Mf+ 4/3/eta*alphas[2]*Mf**(3/4)+alphas[3]/eta*np.arctan((Mf-alphas[4]*fRD)/fDM)
 
@@ -600,7 +604,7 @@ def DPhiMRD(Mf: NDArray[np.floating], fRD: float, fDM: float, eta: float, chi: f
 def DPhiMRD(Mf: float | NDArray[np.floating], fRD: float, fDM: float, eta: float, chi: float) -> float | NDArray[np.floating]:
     """First frequency derivative of PhiMRDAnsatzInt"""
     alphas = alphaFits(eta, chi)
-    fq = np.sqrt(np.sqrt(Mf))
+    fq: float | NDArray[np.floating] = np.sqrt(np.sqrt(Mf))
     return alphas[0] / eta + alphas[1] / eta / Mf**2 + alphas[2] / eta / fq + alphas[3] / eta * fDM / (fDM**2 + (Mf - alphas[4] * fRD)**2)
     # return alphas[0]/eta+alphas[1]/eta/Mf**2+alphas[2]/eta/Mf**(1/4)+alphas[3]/eta/fDM/(1+(Mf-alphas[4]*fRD)**2/fDM**2)
 
@@ -608,8 +612,9 @@ def DPhiMRD(Mf: float | NDArray[np.floating], fRD: float, fDM: float, eta: float
 @njit()
 def DDPhiMRD(Mf: float, fRD: float, fDM: float, eta: float, chi: float) -> float:
     """First frequency derivative of PhiMRDAnsatzInt"""
+    assert Mf > 0.0, 'Mf must be positive'
     alphas = alphaFits(eta, chi)
-    fq = np.sqrt(np.sqrt(Mf))
+    fq: float = np.sqrt(np.sqrt(Mf))
     return -2 * alphas[1] / eta / Mf**3 - 1 / 4 * alphas[2] / eta / fq**5 - 2 * alphas[3] / eta * fDM * (Mf - alphas[4] * fRD) / (fDM**2 + (Mf - alphas[4] * fRD)**2)**2
     # return -2*alphas[1]/eta/Mf**3-1/4*alphas[2]/eta/Mf**(5/4)-2*alphas[3]/eta*fDM*(Mf-alphas[4]*fRD)/(fDM**2+(Mf-alphas[4]*fRD)**2)**2
 

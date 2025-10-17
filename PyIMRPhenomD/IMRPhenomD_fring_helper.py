@@ -403,13 +403,13 @@ def EradRational0815(eta: float, chis: float, chia: float) -> float:
     # """Formula to predict the total radiated energy. Equation 3.7 and 3.8 arXiv:1508.07250
     # Input parameter s defined around Equation 3.7 and 3.8."""
     if eta < 0.25:
-        Seta = np.sqrt(1 - 4 * eta)
+        Seta: float = float(np.sqrt(1 - 4 * eta))
     else:
         Seta = 0.
     # m1 = (1 + Seta) / 2
     # m2 = (1 - Seta) / 2
     # s = (m1**2*chi1+m2**2*chi2)/(m1**2+m2**2)
-    s = chis + chia * Seta / (1 - 2 * eta)
+    s: float = chis + chia * Seta / (1 - 2 * eta)
     return ((0.055974469826360077 * eta + 0.5809510763115132 * eta**2 - 0.9606726679372312 * eta**3 + 3.352411249771192 * eta**4)
             * (1. + (-0.0030302335878845507 - 2.0066110851351073 * eta + 7.7050567802399215 * eta**2) * s)) \
             / (1. + (-0.6714403054720589 - 1.4756929437702908 * eta + 7.304676214885011 * eta**2) * s)
