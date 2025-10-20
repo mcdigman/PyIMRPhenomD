@@ -609,12 +609,16 @@ def DPhiMRD(Mf: float | NDArray[np.floating], fRD: float, fDM: float, eta: float
     # return alphas[0]/eta+alphas[1]/eta/Mf**2+alphas[2]/eta/Mf**(1/4)+alphas[3]/eta/fDM/(1+(Mf-alphas[4]*fRD)**2/fDM**2)
 
 
+@overload
+def DDPhiMRD(Mf: float, fRD: float, fDM: float, eta: float, chi: float) -> float: ...
+@overload
+def DDPhiMRD(Mf: NDArray[np.floating], fRD: float, fDM: float, eta: float, chi: float) -> NDArray[np.floating]: ...
 @njit()
-def DDPhiMRD(Mf: float, fRD: float, fDM: float, eta: float, chi: float) -> float:
+def DDPhiMRD(Mf: float | NDArray[np.floating], fRD: float, fDM: float, eta: float, chi: float) -> float | NDArray[np.floating]:
     """First frequency derivative of PhiMRDAnsatzInt"""
-    assert Mf > 0.0, 'Mf must be positive'
+    assert np.all(Mf > 0.0), 'Mf must be positive'
     alphas = alphaFits(eta, chi)
-    fq: float = np.sqrt(np.sqrt(Mf))
+    fq = np.sqrt(np.sqrt(Mf))
     return -2 * alphas[1] / eta / Mf**3 - 1 / 4 * alphas[2] / eta / fq**5 - 2 * alphas[3] / eta * fDM * (Mf - alphas[4] * fRD) / (fDM**2 + (Mf - alphas[4] * fRD)**2)**2
     # return -2*alphas[1]/eta/Mf**3-1/4*alphas[2]/eta/Mf**(5/4)-2*alphas[3]/eta*fDM*(Mf-alphas[4]*fRD)/(fDM**2+(Mf-alphas[4]*fRD)**2)**2
 
