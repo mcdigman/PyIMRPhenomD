@@ -277,8 +277,12 @@ def AmpInsAnsatz(Mfs: float | NDArray[np.floating], eta: float, chis: float, chi
     return Amps
 
 
+@overload
+def DAmpInsAnsatz(Mf: float, eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> float: ...
+@overload
+def DAmpInsAnsatz(Mf: NDArray[np.floating], eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> NDArray[np.floating]: ...
 @njit()
-def DAmpInsAnsatz(Mf: float, eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> float:
+def DAmpInsAnsatz(Mf: float | NDArray[np.floating], eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> float | NDArray[np.floating]:
     """Take the AmpInsAnsatz expression pull of the f^7/6 and compute the first derivative
     with respect to frequency to get the expression below.
     """
