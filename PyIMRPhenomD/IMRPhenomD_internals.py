@@ -283,7 +283,7 @@ def DAmpInsAnsatz(Mf: float, eta: float, chis: float, chia: float, chi: float, a
 def DAmpInsAnsatz(Mf: NDArray[np.floating], eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> NDArray[np.floating]: ...
 @njit()
 def DAmpInsAnsatz(Mf: float | NDArray[np.floating], eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> float | NDArray[np.floating]:
-    """Take the AmpInsAnsatz expression pull of the f^7/6 and compute the first derivative
+    """Take the AmpInsAnsatz expression pull off the f^7/6 and compute the first derivative
     with respect to frequency to get the expression below.
     """
     chi1: float = chis + chia
@@ -507,6 +507,21 @@ def AmpIntAnsatz(Mfs: float | NDArray[np.floating], fRD: float, fDM: float, eta:
     return Amp
 
 
+@overload
+def DAmpIntAnsatz(Mfs: float, fRD: float, fDM: float, eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> float: ...
+@overload
+def DAmpIntAnsatz(Mfs: NDArray[np.floating], fRD: float, fDM: float, eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> NDArray[np.floating]: ...
+@njit()
+def DAmpIntAnsatz(Mfs: float | NDArray[np.floating], fRD: float, fDM: float, eta: float, chis: float, chia: float, chi: float, amp_mult: float = 1.) -> float | NDArray[np.floating]:
+    """First frequency derivative of AmpIntAnsatz*f**7/6"""
+    deltas = ComputeDeltasFromCollocation(eta, chis, chia, chi, fRD, fDM)
+    # for itrf in range(NF_low,NF):
+    #    Amp[itrf] = amp_mult*Mfs[itrf]**(-7/6)*(deltas[0] + deltas[1]*Mfs[itrf] + deltas[2]*Mfs[itrf]**2 + deltas[3]*Mfs[itrf]**3 + deltas[4]*Mfs[itrf]**4)
+    DAmp = amp_mult * (deltas[1] + 2 * deltas[2] * Mfs + 3 * deltas[3] * Mfs**2 + 4 * deltas[4] * Mfs**3)
+    # Amp = amp_mult*Mfs**(-7/6)*(deltas[0] + deltas[1]*Mfs + deltas[2]*Mfs**2 + deltas[3]*Mfs**3 + deltas[4]*Mfs**4)
+    return DAmp
+
+
 # / Amplitude: glueing function ##############
 
 # @njit()
@@ -552,6 +567,54 @@ def IMRPhenDAmplitude(Mfs: NDArray[np.floating], eta: float, chis: float, chia: 
 
     # Amps *= amp0Func(eta)#/fs**(7/6)
     return Amps
+
+
+def IMRPhenDDAmplitude(Mfs: NDArray[np.floating], eta: float, chis: float, chia: float, NF: int, amp_mult: float = 1.) -> NDArray[np.floating]:
+    """Computes the derivative of the IMR D amplitude times Mf**(7/6) given phenom coefficients.
+    """
+    #  # Transition frequencies
+    chi: float = chiPN(eta, chis, chia)
+
+    finspin: float = FinalSpin0815(eta, chis, chia)  # FinalSpin0815 - 0815 is like a version number
+
+    fRD, fDM = fringdown(eta, chis, chia, finspin)
+
+    fMRDJoinAmp: float = fmaxCalc(fRD, fDM, eta, chi)
+
+    DAmps: NDArray[np.floating] = np.zeros(NF)
+
+    if Mfs[-1] > imrc.f_CUT:
+        itrFCut: int = int(np.searchsorted(Mfs, imrc.f_CUT, side='right'))
+    else:
+        itrFCut = NF
+
+    if Mfs[itrFCut - 1] < imrc.AMP_fJoin_INS:
+        itrfMRDAmp: int = itrFCut
+        itrfInt: int = itrFCut
+    elif Mfs[itrFCut - 1] < fMRDJoinAmp:
+        itrfMRDAmp = itrFCut
+        itrfInt = int(np.searchsorted(Mfs, imrc.AMP_fJoin_INS))
+    else:
+        itrfMRDAmp = int(np.searchsorted(Mfs, fMRDJoinAmp))
+        itrfInt = int(np.searchsorted(Mfs, imrc.AMP_fJoin_INS))
+
+    #   split the calculation to just 1 of 3 possible mutually exclusive ranges
+    # if itrfInt>0:
+    amp0: float = amp_mult * amp0Func(eta)
+    DAmps[0:itrfInt] = DAmpInsAnsatz(Mfs[0:itrfInt], eta, chis, chia, chi, amp_mult=amp0)  # Inspiral range
+    # if itrfInt<itrfMRDAmp:
+    DAmps[itrfInt:itrfMRDAmp] = DAmpIntAnsatz(Mfs[itrfInt:itrfMRDAmp], fRD, fDM, eta, chis, chia, chi, amp_mult=amp0)  # Intermediate range
+    # if itrfMRDAmp<NF:
+    DAmps[itrfMRDAmp:itrFCut] = DAmpMRDAnsatz(Mfs[itrfMRDAmp:itrFCut], fRD, fDM, eta, chi, amp_mult=amp0)  # MRD range
+
+    # add the frequency factor that was removed back
+    # DAmps = DAmps / Mfs ** (7.0 / 6.0)
+
+    # apply chain rule
+    # Amps = IMRPhenDAmplitude(Mfs=Mfs, eta=eta, chis=chis, chia=chia, NF=NF, amp_mult=amp_mult)
+    # DAmps = DAmps - 7.0/6.0 * Amps / Mfs
+
+    return DAmps
 
 
 # Phase functions
@@ -875,7 +938,7 @@ def ComputeIMRPhenDPhaseConnectionCoefficients(fRD: float, fDM: float, eta: floa
 
 
 # @njit()
-def IMRPhenDPhase(Mfs: NDArray[np.floating], Mt_sec: float, eta: float, chis: float, chia: float, NF: int, fRef_in: float, phi0: float) -> tuple[NDArray[np.floating], NDArray[np.floating], NDArray[np.floating], float, float, int]:
+def IMRPhenDPhase(Mfs: NDArray[np.floating], Mt_sec: float, eta: float, chis: float, chia: float, NF: int, fRef_in: float, phi0: float) -> tuple[NDArray[np.floating], NDArray[np.floating], float, float, int]:
     """This function computes the IMR phase given phenom coefficients.
     Defined in VIII. Full IMR Waveforms arXiv:1508.07253
     The inspiral, intermediate and merger-ringdown phase parts
@@ -951,12 +1014,4 @@ def IMRPhenDPhase(Mfs: NDArray[np.floating], Mt_sec: float, eta: float, chis: fl
 
     times[:itrFCut] *= Mt_sec / (2 * np.pi)
 
-    timeps = np.zeros(NF)
-    if imrc.findT:
-        timeps[0:itrfInt] = DDPhiInsAnsatzInt(Mfs[0:itrfInt], eta, chis, chia, chi)  # Ins range
-        timeps[itrfInt:itrfMRDPhi] = DDPhiIntAnsatz(Mfs[itrfInt:itrfMRDPhi], eta, chi)  # intermediate range
-        timeps[itrfMRDPhi:itrFCut] = DDPhiMRD(Mfs[itrfMRDPhi:itrFCut], fRD, fDM, eta, chi)  # MRD range
-
-    timeps[:itrFCut] *= Mt_sec**2 / (2 * np.pi)
-
-    return Phis, times, timeps, TTRef, MfRef, itrFCut
+    return Phis, times, TTRef, MfRef, itrFCut

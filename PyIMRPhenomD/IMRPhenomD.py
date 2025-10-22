@@ -80,7 +80,7 @@ def IMRPhenomDGenerateFD_internal(phi0: float, fRef_in: float, deltaF: float, m1
 
     # Now generate the waveform
     Mfs: NDArray[np.floating] = Mt_sec * deltaF * np.arange(ind_min, ind_max)  # geometric frequency
-    phis, _times, _timeps, _t0, _MfRef, _itrFCut = IMRPhenDPhase(Mfs[ind_min:ind_max], Mt_sec, eta, chis, chia, ind_max - ind_min, fRef_in, phi0)
+    phis, _times, _t0, _MfRef, _itrFCut = IMRPhenDPhase(Mfs[ind_min:ind_max], Mt_sec, eta, chis, chia, ind_max - ind_min, fRef_in, phi0)
     amps = IMRPhenDAmplitude(Mfs[ind_min:ind_max], eta, chis, chia, ind_max - ind_min, amp_mult=amp0)
     htilde.data[:ind_max - ind_min] = amps[:ind_max - ind_min] * np.exp(-1j * phis[:ind_max - ind_min])
 
