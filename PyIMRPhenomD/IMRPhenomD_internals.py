@@ -875,7 +875,7 @@ def ComputeIMRPhenDPhaseConnectionCoefficients(fRD: float, fDM: float, eta: floa
 
 
 # @njit()
-def IMRPhenDPhase(Mfs: NDArray[np.floating], Mt_sec: float, eta: float, chis: float, chia: float, NF: int, fRef_in: float, phi0: float) -> tuple[NDArray[np.floating], NDArray[np.floating], float, float, int]:
+def IMRPhenDPhase(Mfs: NDArray[np.floating], Mt_sec: float, eta: float, chis: float, chia: float, NF: int, fRef_in: float, phi0: float) -> tuple[NDArray[np.floating], NDArray[np.floating], NDArray[np.floating], float, float, int]:
     """This function computes the IMR phase given phenom coefficients.
     Defined in VIII. Full IMR Waveforms arXiv:1508.07253
     The inspiral, intermediate and merger-ringdown phase parts
@@ -951,4 +951,12 @@ def IMRPhenDPhase(Mfs: NDArray[np.floating], Mt_sec: float, eta: float, chis: fl
 
     times[:itrFCut] *= Mt_sec / (2 * np.pi)
 
-    return Phis, times, TTRef, MfRef, itrFCut
+    timeps = np.zeros(NF)
+    if imrc.findT:
+        timeps[0:itrfInt] = DDPhiInsAnsatzInt(Mfs[0:itrfInt], eta, chis, chia, chi)  # Ins range
+        timeps[itrfInt:itrfMRDPhi] = DDPhiIntAnsatz(Mfs[itrfInt:itrfMRDPhi], eta, chi)  # intermediate range
+        timeps[itrfMRDPhi:itrFCut] = DDPhiMRD(Mfs[itrfMRDPhi:itrFCut], fRD, fDM, eta, chi)  # MRD range
+
+    timeps[:itrFCut] *= Mt_sec**2 / (2 * np.pi)
+
+    return Phis, times, timeps, TTRef, MfRef, itrFCut
